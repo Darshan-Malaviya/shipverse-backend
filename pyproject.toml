@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "shipverseserver"
+version = "0.1.0"
+description = ""
+authors = ["yigit768 <yigitmufata3@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pendulum = "^2.1.2"
+django = "^4.2.2"
+djangorestframework = "^3.14.0"
+django-cors-headers = "^4.0.0"
+psycopg2 = "^2.9.6"
+bigcommerce = "^0.23.2"
+djangorestframework-simplejwt = "^5.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
