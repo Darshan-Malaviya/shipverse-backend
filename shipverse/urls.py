@@ -95,4 +95,8 @@ urlpatterns = [
     re_path(r'^api/shopify/shop/redact$', shopifyviews.shop_redact_webhook),
     #     re_path(r'^api/ups/labelRecovery$',
     #             upsviews.labelRecovery),
+    
+    # added by riken
+    re_path(r'^application/settings/CheckReturnOnBoard$', views.CheckReturnOnBoardView.as_view())
+    
 ]

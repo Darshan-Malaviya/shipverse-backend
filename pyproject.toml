@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "shipverseserver"
+name = "shipverse"
 version = "0.1.0"
 description = ""
 authors = ["yigit768 <yigitmufata3@gmail.com>"]

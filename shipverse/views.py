@@ -3,11 +3,12 @@ from django.shortcuts import render
 
 from django.shortcuts import render
 from django.http.response import JsonResponse
-
-
+from .models import FromLocation, CarrierUsers, StoreUsers
+from .decorators import log_api_activity
 from rest_framework.parsers import JSONParser
 from rest_framework import status
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from shipverse.models import Users, VerificationTokens, ResetPasswordTokens, InviteTokens, Subscriptions
 from shipverse.serializers import UsersSerializer
 from rest_framework.decorators import api_view
@@ -29,12 +30,13 @@ import stripe
 import json
 import logging
 from smtplib import SMTPException
-
+from .utils import CheckReturnOnBoard
 # check authorized
 
 
 @api_view(['POST'])
 def is_jwt_expired(request):
+    
     token = request.data['token']
     refreshtoken = request.data['refreshtoken']
     try:
@@ -46,6 +48,7 @@ def is_jwt_expired(request):
 
 
 @api_view(['POST'])
+@log_api_activity
 def user_create(request):
     try:
         user = Users.objects.get(
@@ -55,10 +58,10 @@ def user_create(request):
     except Users.DoesNotExist:
         user = Users(
             username=request.data['username'], email=request.data['email'])
+        user.set_password(request.data['password'])
         user.username = request.data['username']
         user.email = request.data['email']
         user.fullName = request.data['fullName']
-        user.password = request.data['password']
         user.phone = request.data['phone']
         user.usertype = request.data['usertype']
         user.parentuser = request.data['parentuser']
@@ -86,7 +89,7 @@ def user_create(request):
             except APIException as e:
                 return JsonResponse({'result': str(e.detail)}, status=e.status_code)
 
-
+@log_api_activity
 def inviteMailToken(username, email):
     try:
         row = InviteTokens.objects.get(username=username, email=email)
@@ -123,7 +126,7 @@ def inviteMailToken(username, email):
         else:
             raise APIException(detail='Internal Server Error', code='500')
 
-
+@log_api_activity
 def createEmailToken(email):
     try:
         row = VerificationTokens.objects.get(email=email)
@@ -159,7 +162,7 @@ def createEmailToken(email):
         else:
             raise APIException(detail='Internal Server Error', code='500')
 
-
+@log_api_activity
 def sendInviteMail(username, email, token):
 
     html_ = 'Hi! <br><br> A user account has been created for you at www.app.goshipverse.com.<br>Username:'+username+'<br>Next, create a password at this ' + '<a href="' + \
@@ -178,7 +181,7 @@ def sendInviteMail(username, email, token):
     except:
         return ""
 
-
+@log_api_activity
 def sendVerificationEmail(email, token):
 
     html_ = 'Hi! <br><br> Thanks for your registration<br><br>' + '<a href="' + \
@@ -197,7 +200,7 @@ def sendVerificationEmail(email, token):
     except:
         return ""
 
-
+@log_api_activity
 @api_view(['GET'])
 def verifyEmail(request, token):
     try:
@@ -213,7 +216,7 @@ def verifyEmail(request, token):
     except VerificationTokens.DoesNotExist:
         return JsonResponse({'result': 'This link is expired'}, status=status.HTTP_403_FORBIDDEN)
 
-
+@log_api_activity
 @api_view(['POST'])
 def user_update(request):
     try:
@@ -237,7 +240,7 @@ def user_update(request):
 
 # signin
 
-
+@log_api_activity
 @api_view(['POST'])
 def user_signin(request):
     email = request.data['email']
@@ -253,7 +256,8 @@ def user_signin(request):
     if user is None:
         return JsonResponse({'result': 'User not found!'},
                             status=status.HTTP_401_UNAUTHORIZED)
-    if not user.password == request.data['password']:
+    from django.contrib.auth.hashers import make_password
+    if not user.check_user_password(request.data['password']):
         return JsonResponse({'result': 'Incorrect password!'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -264,10 +268,10 @@ def user_signin(request):
                 return JsonResponse({'result': 'Verification email sent successfully'}, status=status.HTTP_403_FORBIDDEN)
         except APIException as e:
             return JsonResponse({'result': str(e)}, status=e.status_code)
-
     if user.parentuser != "0" and user.active == False:
         return JsonResponse({'result': 'Not allowed by owner!'},
                             status=status.HTTP_401_UNAUTHORIZED)
+
     if (user.parentuser != "0"):
         parentuser = Users.objects.filter(id=user.parentuser).first()
         access_token = create_access_token(
@@ -275,23 +279,34 @@ def user_signin(request):
         refresh_token = create_refresh_token(
             parentuser.id, user.username, user.email)
     else:
-
         access_token = create_access_token(
             user.id, user.username, user.email)
         refresh_token = create_refresh_token(
             user.id, user.username, user.email)
+
     try:
         subuser = Subscriptions.objects.get(userId=user.id)
         count = subuser.subscription_count
     except Subscriptions.DoesNotExist:
         count = 0
+    # FromLocation, CarrierUsers, StoreUsers
+   
+        
     response = JsonResponse(
-        {'token': access_token, 'refreshtoken': refresh_token, 'roles': user.roles, 'parentuser': user.parentuser, 'subcount': count})
+        {'token': access_token, 'refreshtoken': refresh_token, 'roles': user.roles, 'parentuser': user.parentuser, 'subcount': count,'redirect_onbard' : CheckReturnOnBoard(user.id)})
     return response
 
 # childuser
 
+class CheckReturnOnBoardView(APIView):
+    @log_api_activity
+    def get(self,requests,formate=None) :
+        print('hello world')
+        user = Users.objects.all().first()
+        
+        return Response({"stay_CheckReturnOnBoard" : CheckReturnOnBoard(user.id)},status=status.HTTP_200_OK)
 
+@log_api_activity
 @api_view(['POST'])
 def getchildaccounts(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -333,7 +348,7 @@ def getchildaccounts(request):
     json_data = json.dumps(account_data)
     return JsonResponse(json_data, safe=False)
 
-
+@log_api_activity
 @api_view(['GET'])
 def forgotPassword(request, email):
     try:
@@ -347,7 +362,7 @@ def forgotPassword(request, email):
     except Users.DoesNotExist:
         return JsonResponse({'result': "Invalid Email Address"}, status=404)
 
-
+@log_api_activity
 def createForgotPasswordToken(email):
     try:
         token = ResetPasswordTokens.objects.get(email=email)
@@ -383,7 +398,7 @@ def createForgotPasswordToken(email):
         else:
             raise APIException(detail='Internal Server Error', code='500')
 
-
+@log_api_activity
 def sendForgotPasswordEmail(email, token):
 
     html_ = 'Hi! <br><br> If you requested to reset your password<br><br>' + '<a href="' + \
@@ -405,7 +420,7 @@ def sendForgotPasswordEmail(email, token):
 
     return sent
 
-
+@log_api_activity
 @api_view(['POST'])
 def resetPassword(request):
 
@@ -416,7 +431,7 @@ def resetPassword(request):
     user.save()
     return JsonResponse({'result': "Password has been reset successfully"}, status=status.HTTP_200_OK)
 
-
+@log_api_activity
 @api_view(['POST'])
 def createCheckoutSession(request):
 
@@ -486,7 +501,7 @@ def createCheckoutSession(request):
             print({'result': e})
             return JsonResponse({'result': "failed"}, status=500)
 
-
+@log_api_activity
 @api_view(['POST'])
 def webhook_received(request):
     stripe.api_key = settings.STRIPE_API_KEY
@@ -654,7 +669,7 @@ def webhook_received(request):
 
     return JsonResponse({'status': 'success'})
 
-
+@log_api_activity
 @api_view(['POST'])
 def cancel_subscription(request):
 
@@ -670,7 +685,7 @@ def cancel_subscription(request):
         subuser.subscription_id, cancel_at_period_end=isCancel,)
     return JsonResponse({'result': 'success', 'count': 0}, status=200)
 
-
+@log_api_activity
 @api_view(['POST'])
 def getSubscriptions(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -707,7 +722,7 @@ def getSubscriptions(request):
     # Return the JSON response with a 200 status code
     return JsonResponse(response_data, status=200)
 
-
+@log_api_activity
 @api_view(['POST'])
 def resetInvitePassword(request):
 
@@ -718,7 +733,7 @@ def resetInvitePassword(request):
     user.save()
     return JsonResponse({'result': "Password has been reset successfully"}, status=status.HTTP_200_OK)
 
-
+@log_api_activity
 def my_cron_job():
     logging.basicConfig(
         filename='/var/www/shipverse/cron.log', level=logging.INFO)

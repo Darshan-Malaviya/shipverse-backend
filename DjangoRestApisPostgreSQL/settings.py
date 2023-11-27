@@ -50,7 +50,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'django.middleware.common.CommonMiddleware',   
+    'shipverse.middleware.LoggingMiddleware'
+
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
@@ -97,20 +99,20 @@ if Environment:
     }
     FRONTEND_URL = 'http://localhost:3000'
     BACKEND_URL = 'http://localhost:8080'
-    BC_CLIENT_ID = env('bc_client_id_debug')
-    BC_CLIENT_SECRET = env('bc_client_secret_debug')
-    BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
-    BC_REDIRECT_URI = env('bc_redirect_uri_debug')
+    BC_CLIENT_ID = ''
+    BC_CLIENT_SECRET = ''
+    BC_TOKEN_ENDPOINT = ''
+    BC_REDIRECT_URI = ''
 
-    UPS_CLIENT_ID = env('ups_client_id_debug')
-    UPS_CLIENT_SECRET = env('ups_client_secret_debug')
-    SHOPIFY_CLIENT_ID = env('shopify_client_id_debug')
-    SHOPIFY_CLIENT_SECRET = env('shopify_client_secret_debug')
-    SHOPIFY_REDIRECT_URL = env('shopify_redirect_url_debug')
-    UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint_debug')
-    STRIPE_API_KEY = env('stripe_api_key_debug')
-    STRIPE_PRICE_ID = env('stripe_price_id_debug')
-    WEBHOOK_SECRET = env('webhook_secret_debug')
+    UPS_CLIENT_ID = ''
+    UPS_CLIENT_SECRET = ''
+    SHOPIFY_CLIENT_ID = ''
+    SHOPIFY_CLIENT_SECRET = ''
+    SHOPIFY_REDIRECT_URL = ''
+    UPS_REFRESHTOKEN_ENDPOINT = ''
+    STRIPE_API_KEY = ''
+    STRIPE_PRICE_ID = ''
+    WEBHOOK_SECRET = ''
 else:
     # Production database settings
     DATABASES = {
@@ -125,20 +127,20 @@ else:
     }
     FRONTEND_URL = 'https://app.goshipverse.com'
     BACKEND_URL = 'https://app.goshipverse.com'
-    BC_CLIENT_ID = env('bc_client_id')
-    BC_CLIENT_SECRET = env('bc_client_secret')
-    BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
-    BC_REDIRECT_URI = env('bc_redirect_uri')
+    BC_CLIENT_ID = ''
+    BC_CLIENT_SECRET = ''
+    BC_TOKEN_ENDPOINT = ''
+    BC_REDIRECT_URI = ''
 
-    UPS_CLIENT_ID = env('ups_client_id')
-    UPS_CLIENT_SECRET = env('ups_client_secret')
-    SHOPIFY_CLIENT_ID = env('shopify_client_id')
-    SHOPIFY_CLIENT_SECRET = env('shopify_client_secret')
-    SHOPIFY_REDIRECT_URL = env('shopify_redirect_url')
-    UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint')
-    STRIPE_API_KEY = env('stripe_api_key')
-    STRIPE_PRICE_ID = env('stripe_price_id')
-    WEBHOOK_SECRET = env('webhook_secret')
+    UPS_CLIENT_ID = ''
+    UPS_CLIENT_SECRET = ''
+    SHOPIFY_CLIENT_ID = ''
+    SHOPIFY_CLIENT_SECRET = ''
+    SHOPIFY_REDIRECT_URL = ''
+    UPS_REFRESHTOKEN_ENDPOINT = ''
+    STRIPE_API_KEY = ''
+    STRIPE_PRICE_ID = ''
+    WEBHOOK_SECRET = ''
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -198,3 +200,40 @@ EMAIL_USE_TLS = False
 CRONJOBS = [
     ('0 0 * * *', 'shipverse.views.my_cron_job'),
 ]
+
+#added by riken
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '{asctime} {levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'normal_log_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'logs/normal.log',
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'standard',
+        },
+        'error_log_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'logs/error.log',
+            'when': 'midnight',
+            'backupCount': 7,
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['normal_log_file', 'error_log_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 # Create your models here.
+from django.contrib.auth.hashers import make_password, check_password
 
 
 class Users(models.Model):
@@ -17,6 +18,12 @@ class Users(models.Model):
     active = models.BooleanField(default=False)
     isEmailVerified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now=True)
+    
+    def set_password(self, password):
+        self.password = make_password(password)
+    
+    def check_user_password(self, raw_password):
+        return check_password(raw_password,self.password)
 
 
 class VerificationTokens(models.Model):
