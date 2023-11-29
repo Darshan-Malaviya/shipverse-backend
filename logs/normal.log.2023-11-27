@@ -1,0 +1,281 @@
+2023-11-27 16:38:00,710 INFO Watching for file changes with StatReloader
+2023-11-27 16:38:06,934 INFO API Request :<WSGIRequest: POST '/api/ups/updateFromLocation'>, Method: POST, Path: /api/ups/updateFromLocation, Body: b'{"fromLocation":{"id":"","locationName":"","residential":false,"fullName":"","attentionName":"","countryCode":"","address":"","address1":"","city":"","stateCode":"","postalCode":"","phone":"","email":"","selected":false,"timezone":"","pickupAddress":false,"returnFullName":"","returnAttentionName":"","returnCountryCode":"","returnAddress":"","returnAddress1":"","returnCity":"","returnStateCode":"","returnPostalCode":"","returnPhone":"","returnEmail":"","returnTimezone":""}}'
+2023-11-27 16:38:06,934 INFO API Request, Path: /api/ups/updateFromLocation, Body: b'{"fromLocation":{"id":"","locationName":"","residential":false,"fullName":"","attentionName":"","countryCode":"","address":"","address1":"","city":"","stateCode":"","postalCode":"","phone":"","email":"","selected":false,"timezone":"","pickupAddress":false,"returnFullName":"","returnAttentionName":"","returnCountryCode":"","returnAddress":"","returnAddress1":"","returnCity":"","returnStateCode":"","returnPostalCode":"","returnPhone":"","returnEmail":"","returnTimezone":""}}'
+2023-11-27 16:38:06,949 INFO Status Code: 422
+2023-11-27 16:38:06,949 WARNING Unprocessable Entity: /api/ups/updateFromLocation
+2023-11-27 16:38:08,523 INFO API Request :<WSGIRequest: POST '/api/ups/updateFromLocation'>, Method: POST, Path: /api/ups/updateFromLocation, Body: b'{"fromLocation":{"id":"","locationName":"","residential":false,"fullName":"","attentionName":"","countryCode":"","address":"","address1":"","city":"","stateCode":"","postalCode":"","phone":"","email":"","selected":false,"timezone":"","pickupAddress":false,"returnFullName":"","returnAttentionName":"","returnCountryCode":"","returnAddress":"","returnAddress1":"","returnCity":"","returnStateCode":"","returnPostalCode":"","returnPhone":"","returnEmail":"","returnTimezone":""}}'
+2023-11-27 16:38:08,523 INFO API Request, Path: /api/ups/updateFromLocation, Body: b'{"fromLocation":{"id":"","locationName":"","residential":false,"fullName":"","attentionName":"","countryCode":"","address":"","address1":"","city":"","stateCode":"","postalCode":"","phone":"","email":"","selected":false,"timezone":"","pickupAddress":false,"returnFullName":"","returnAttentionName":"","returnCountryCode":"","returnAddress":"","returnAddress1":"","returnCity":"","returnStateCode":"","returnPostalCode":"","returnPhone":"","returnEmail":"","returnTimezone":""}}'
+2023-11-27 16:38:08,539 INFO Status Code: 422
+2023-11-27 16:38:08,539 WARNING Unprocessable Entity: /api/ups/updateFromLocation
+2023-11-27 17:02:10,170 INFO Watching for file changes with StatReloader
+2023-11-27 17:09:55,755 INFO Watching for file changes with StatReloader
+2023-11-27 17:09:58,626 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:09:58,626 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:09:58,659 INFO Status Code: 401
+2023-11-27 17:09:58,659 WARNING Unauthorized: /api/users/signin
+2023-11-27 17:10:43,431 INFO /home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/views.py changed, reloading.
+2023-11-27 17:10:45,749 INFO Watching for file changes with StatReloader
+2023-11-27 17:10:50,867 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:10:50,867 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:10:50,893 INFO Status Code: 401
+2023-11-27 17:10:50,893 WARNING Unauthorized: /api/users/signin
+2023-11-27 17:11:06,100 INFO /home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/views.py changed, reloading.
+2023-11-27 17:11:07,843 INFO Watching for file changes with StatReloader
+2023-11-27 17:11:09,469 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:11:09,469 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:11:12,368 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:11:12,368 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:13:02,026 INFO API Request :<WSGIRequest: GET '/auth/bundle.js'>, Method: GET, Path: /auth/bundle.js, Body: b''
+2023-11-27 17:13:02,095 INFO Status Code: 404
+2023-11-27 17:13:02,099 WARNING Not Found: /auth/bundle.js
+2023-11-27 17:13:06,001 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"null","refreshtoken":"null"}'
+2023-11-27 17:13:06,006 INFO Status Code: 200
+2023-11-27 17:13:24,752 INFO API Request :<WSGIRequest: POST '/api/users/signup'>, Method: POST, Path: /api/users/signup, Body: b'{"username":"callen","fullName":"Riken609","email":"rikenkhadela777@gmail.com","phone":"9512443412","password":"Riken@123","usertype":"owner","parentuser":"0","roles":"all","active":true}'
+2023-11-27 17:13:25,147 ERROR Internal Server Error: /api/users/signup
+Traceback (most recent call last):
+  File "/home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/views.py", line 54, in user_create
+    user = Users.objects.get(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/query.py", line 637, in get
+    raise self.model.DoesNotExist(
+shipverse.models.Users.DoesNotExist: Users matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.StringDataRightTruncation: value too long for type character varying(70)
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/decorators.py", line 12, in wrapper
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/views.py", line 70, in user_create
+    user.save()
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/base.py", line 1020, in _save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/base.py", line 1061, in _do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/query.py", line 1805, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/models/sql/compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/dell/Desktop/Darshan/back-end-main/env/lib/python3.11/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.DataError: value too long for type character varying(70)
+
+2023-11-27 17:13:25,150 INFO Status Code: 500
+2023-11-27 17:13:43,569 INFO /home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/models.py changed, reloading.
+2023-11-27 17:14:15,083 INFO Watching for file changes with StatReloader
+2023-11-27 17:14:18,522 INFO API Request :<WSGIRequest: POST '/api/users/signup'>, Method: POST, Path: /api/users/signup, Body: b'{"username":"callen","fullName":"Riken609","email":"rikenkhadela777@gmail.com","phone":"9512443412","password":"Riken@123","usertype":"owner","parentuser":"0","roles":"all","active":true}'
+2023-11-27 17:14:21,731 INFO Status Code: 200
+2023-11-27 17:14:36,954 INFO API Request :<WSGIRequest: GET '/auth/bundle.js'>, Method: GET, Path: /auth/bundle.js, Body: b''
+2023-11-27 17:14:36,989 INFO Status Code: 404
+2023-11-27 17:14:36,990 WARNING Not Found: /auth/bundle.js
+2023-11-27 17:14:38,662 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"","refreshtoken":""}'
+2023-11-27 17:14:38,663 INFO Status Code: 200
+2023-11-27 17:14:49,709 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:14:49,709 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:06,573 INFO /home/dell/Music/Darshan/Backend-main/shipverse-backend/shipverse/views.py changed, reloading.
+2023-11-27 17:15:07,032 INFO Watching for file changes with StatReloader
+2023-11-27 17:15:09,299 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:09,299 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:11,807 INFO Status Code: 403
+2023-11-27 17:15:11,807 WARNING Forbidden: /api/users/signin
+2023-11-27 17:15:18,028 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:18,028 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:20,408 INFO Status Code: 403
+2023-11-27 17:15:20,409 WARNING Forbidden: /api/users/signin
+2023-11-27 17:15:38,009 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:38,009 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:15:38,367 INFO Status Code: 200
+2023-11-27 17:15:39,495 INFO API Request :<WSGIRequest: POST '/api/ups/getAddress'>, Method: POST, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:15:39,497 INFO API Request, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:15:39,506 INFO API Request :<WSGIRequest: POST '/api/ups/getInternationalSettings'>, Method: POST, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:15:39,508 INFO API Request, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:15:39,530 INFO API Request :<WSGIRequest: POST '/api/ups/getTaxes'>, Method: POST, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:15:39,548 INFO API Request, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:15:39,564 INFO API Request :<WSGIRequest: POST '/api/ups/getPackages'>, Method: POST, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:15:39,567 INFO API Request :<WSGIRequest: POST '/api/ups/addressValidation'>, Method: POST, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:15:39,571 INFO API Request, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:15:39,576 INFO API Request :<WSGIRequest: POST '/api/shopify/getShopifyStores'>, Method: POST, Path: /api/shopify/getShopifyStores, Body: b'{}'
+2023-11-27 17:15:39,586 INFO API Request, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:15:39,730 INFO Status Code: 200
+2023-11-27 17:15:39,779 INFO API Request :<WSGIRequest: POST '/api/bigcommerce/getBigCommerceStores'>, Method: POST, Path: /api/bigcommerce/getBigCommerceStores, Body: b'{}'
+2023-11-27 17:15:39,816 INFO Status Code: 200
+2023-11-27 17:15:39,855 INFO Status Code: 200
+2023-11-27 17:15:39,884 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:15:39,886 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:15:39,927 INFO Status Code: 200
+2023-11-27 17:15:39,991 INFO API Request :<WSGIRequest: POST '/api/payment/get_subscriptions'>, Method: POST, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:15:39,993 INFO API Request, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:15:40,163 INFO Status Code: 200
+2023-11-27 17:15:40,186 INFO Status Code: 200
+2023-11-27 17:15:40,221 INFO Status Code: 200
+2023-11-27 17:15:41,683 INFO API Request :<WSGIRequest: GET '/_small.png'>, Method: GET, Path: /_small.png, Body: b''
+2023-11-27 17:15:41,708 INFO Status Code: 404
+2023-11-27 17:15:41,708 WARNING Not Found: /_small.png
+2023-11-27 17:15:41,875 INFO API Request :<WSGIRequest: POST '/api/ups/getFromLocations'>, Method: POST, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:15:41,876 INFO API Request, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:15:41,906 INFO Status Code: 200
+2023-11-27 17:15:41,911 INFO Status Code: 200
+2023-11-27 17:15:41,943 INFO Status Code: 200
+2023-11-27 17:18:18,447 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:18:18,448 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:18:18,808 INFO Status Code: 200
+2023-11-27 17:18:19,143 INFO API Request :<WSGIRequest: POST '/api/ups/getAddress'>, Method: POST, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:19,145 INFO API Request, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:19,155 INFO API Request :<WSGIRequest: POST '/api/ups/getInternationalSettings'>, Method: POST, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:18:19,156 INFO API Request, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:18:19,159 INFO API Request :<WSGIRequest: POST '/api/ups/getTaxes'>, Method: POST, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:18:19,168 INFO API Request :<WSGIRequest: POST '/api/ups/getPackages'>, Method: POST, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:18:19,168 INFO API Request, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:18:19,169 INFO API Request, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:18:19,183 INFO API Request :<WSGIRequest: POST '/api/ups/addressValidation'>, Method: POST, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:19,183 INFO API Request, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:19,194 INFO API Request :<WSGIRequest: POST '/api/shopify/getShopifyStores'>, Method: POST, Path: /api/shopify/getShopifyStores, Body: b'{}'
+2023-11-27 17:18:19,293 INFO Status Code: 200
+2023-11-27 17:18:19,315 INFO Status Code: 200
+2023-11-27 17:18:19,325 INFO API Request :<WSGIRequest: POST '/api/bigcommerce/getBigCommerceStores'>, Method: POST, Path: /api/bigcommerce/getBigCommerceStores, Body: b'{}'
+2023-11-27 17:18:19,357 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:19,358 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:19,367 INFO Status Code: 200
+2023-11-27 17:18:19,394 INFO API Request :<WSGIRequest: POST '/api/payment/get_subscriptions'>, Method: POST, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:18:19,395 INFO API Request, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:18:19,463 INFO Status Code: 200
+2023-11-27 17:18:19,610 INFO Status Code: 200
+2023-11-27 17:18:19,627 INFO Status Code: 200
+2023-11-27 17:18:19,662 INFO Status Code: 200
+2023-11-27 17:18:20,889 INFO API Request :<WSGIRequest: GET '/application/settings/bundle.js'>, Method: GET, Path: /application/settings/bundle.js, Body: b''
+2023-11-27 17:18:21,012 INFO Status Code: 404
+2023-11-27 17:18:21,020 WARNING Not Found: /application/settings/bundle.js
+2023-11-27 17:18:21,045 INFO Status Code: 200
+2023-11-27 17:18:21,177 INFO Status Code: 200
+2023-11-27 17:18:24,000 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTE5MTg5OCwiaWF0IjoxNzAxMTA1NDk4fQ.W6B2-0qnMn5pnOXqfs5whEORd-KDwVdP5A_keykRluY","refreshtoken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTI3ODI5OCwiaWF0IjoxNzAxMTA1NDk4fQ.LvhbGLLCc866CuPrEVrr3ajdTpmTxDY4as6uFgLuHxY"}'
+2023-11-27 17:18:24,004 INFO Status Code: 200
+2023-11-27 17:18:27,811 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTE5MTg5OCwiaWF0IjoxNzAxMTA1NDk4fQ.W6B2-0qnMn5pnOXqfs5whEORd-KDwVdP5A_keykRluY","refreshtoken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTI3ODI5OCwiaWF0IjoxNzAxMTA1NDk4fQ.LvhbGLLCc866CuPrEVrr3ajdTpmTxDY4as6uFgLuHxY"}'
+2023-11-27 17:18:27,817 INFO Status Code: 200
+2023-11-27 17:18:28,735 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:28,745 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:28,740 INFO API Request :<WSGIRequest: POST '/api/shopify/getShopifyStores'>, Method: POST, Path: /api/shopify/getShopifyStores, Body: b'{}'
+2023-11-27 17:18:28,744 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:28,766 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:28,755 INFO API Request :<WSGIRequest: POST '/api/ups/getFromLocations'>, Method: POST, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:18:28,776 INFO API Request, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:18:29,080 INFO Status Code: 200
+2023-11-27 17:18:29,107 INFO Status Code: 200
+2023-11-27 17:18:29,124 INFO Status Code: 200
+2023-11-27 17:18:29,128 INFO Status Code: 200
+2023-11-27 17:18:29,228 INFO API Request :<WSGIRequest: POST '/api/bigcommerce/isAuth'>, Method: POST, Path: /api/bigcommerce/isAuth, Body: b'{}'
+2023-11-27 17:18:29,312 INFO Status Code: 401
+2023-11-27 17:18:29,314 WARNING Unauthorized: /api/bigcommerce/isAuth
+2023-11-27 17:18:46,669 INFO API Request :<WSGIRequest: POST '/api/users/signin'>, Method: POST, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:18:46,669 INFO API Request, Path: /api/users/signin, Body: b'{"email":"rikenkhadela777@gmail.com","password":"Riken@123"}'
+2023-11-27 17:18:47,034 INFO Status Code: 200
+2023-11-27 17:18:47,533 INFO API Request :<WSGIRequest: POST '/api/ups/getAddress'>, Method: POST, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:47,534 INFO API Request, Path: /api/ups/getAddress, Body: b'{"address":"","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:47,546 INFO API Request :<WSGIRequest: POST '/api/ups/getInternationalSettings'>, Method: POST, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:18:47,551 INFO API Request :<WSGIRequest: POST '/api/ups/getTaxes'>, Method: POST, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:18:47,553 INFO API Request, Path: /api/ups/getInternationalSettings, Body: b'{}'
+2023-11-27 17:18:47,557 INFO API Request, Path: /api/ups/getTaxes, Body: b'{}'
+2023-11-27 17:18:47,559 INFO API Request :<WSGIRequest: POST '/api/ups/getPackages'>, Method: POST, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:18:47,570 INFO API Request :<WSGIRequest: POST '/api/ups/addressValidation'>, Method: POST, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:47,570 INFO API Request, Path: /api/ups/getPackages, Body: b'{}'
+2023-11-27 17:18:47,571 INFO API Request, Path: /api/ups/addressValidation, Body: b'{"address":"undefined, undefined, undefined, undefined, undefined","apiKey":"keMMcWt8M0p8ZtVVn_HXTecv_2e3FI_SjF4P7YUfXvI"}'
+2023-11-27 17:18:47,576 INFO API Request :<WSGIRequest: POST '/api/shopify/getShopifyStores'>, Method: POST, Path: /api/shopify/getShopifyStores, Body: b'{}'
+2023-11-27 17:18:47,790 INFO Status Code: 200
+2023-11-27 17:18:47,819 INFO API Request :<WSGIRequest: POST '/api/bigcommerce/getBigCommerceStores'>, Method: POST, Path: /api/bigcommerce/getBigCommerceStores, Body: b'{}'
+2023-11-27 17:18:47,933 INFO Status Code: 200
+2023-11-27 17:18:47,940 INFO Status Code: 200
+2023-11-27 17:18:47,941 INFO Status Code: 200
+2023-11-27 17:18:47,987 INFO API Request :<WSGIRequest: POST '/api/payment/get_subscriptions'>, Method: POST, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:18:47,987 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:47,987 INFO API Request, Path: /api/payment/get_subscriptions, Body: b'{}'
+2023-11-27 17:18:47,987 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:48,153 INFO Status Code: 200
+2023-11-27 17:18:48,302 INFO Status Code: 200
+2023-11-27 17:18:48,351 INFO Status Code: 200
+2023-11-27 17:18:48,809 INFO API Request :<WSGIRequest: GET '/application/settings/bundle.js'>, Method: GET, Path: /application/settings/bundle.js, Body: b''
+2023-11-27 17:18:48,867 INFO Status Code: 404
+2023-11-27 17:18:48,867 WARNING Not Found: /application/settings/bundle.js
+2023-11-27 17:18:49,085 INFO API Request :<WSGIRequest: GET '/_small.png'>, Method: GET, Path: /_small.png, Body: b''
+2023-11-27 17:18:49,095 INFO Status Code: 404
+2023-11-27 17:18:49,099 WARNING Not Found: /_small.png
+2023-11-27 17:18:49,115 INFO Status Code: 200
+2023-11-27 17:18:49,176 INFO Status Code: 200
+2023-11-27 17:18:51,995 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTE5MTkyNywiaWF0IjoxNzAxMTA1NTI3fQ.u9rq-3eJ2fN5_YLCopfaDEzmeTpCflmmsNZoe1nn7vs","refreshtoken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTI3ODMyNywiaWF0IjoxNzAxMTA1NTI3fQ.p-V12KRdkSnZ2Ktnd20kAR60MD1aObcQHk_YI7voQlU"}'
+2023-11-27 17:18:51,996 INFO Status Code: 200
+2023-11-27 17:18:52,583 INFO API Request :<WSGIRequest: POST '/api/users/is_jwt_expired'>, Method: POST, Path: /api/users/is_jwt_expired, Body: b'{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTE5MTkyNywiaWF0IjoxNzAxMTA1NTI3fQ.u9rq-3eJ2fN5_YLCopfaDEzmeTpCflmmsNZoe1nn7vs","refreshtoken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhbGxlbiIsImVtYWlsIjoicmlrZW5raGFkZWxhNzc3QGdtYWlsLmNvbSIsImV4cCI6MTcwMTI3ODMyNywiaWF0IjoxNzAxMTA1NTI3fQ.p-V12KRdkSnZ2Ktnd20kAR60MD1aObcQHk_YI7voQlU"}'
+2023-11-27 17:18:52,585 INFO Status Code: 200
+2023-11-27 17:18:52,588 INFO API Request :<WSGIRequest: POST '/api/bigcommerce/isAuth'>, Method: POST, Path: /api/bigcommerce/isAuth, Body: b'{}'
+2023-11-27 17:18:52,605 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:52,608 INFO API Request :<WSGIRequest: POST '/api/shopify/getShopifyStores'>, Method: POST, Path: /api/shopify/getShopifyStores, Body: b'{}'
+2023-11-27 17:18:52,610 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:52,638 INFO API Request :<WSGIRequest: POST '/api/ups/getUsers'>, Method: POST, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:52,639 INFO API Request, Path: /api/ups/getUsers, Body: b'{}'
+2023-11-27 17:18:52,665 INFO API Request :<WSGIRequest: POST '/api/ups/getFromLocations'>, Method: POST, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:18:52,667 INFO API Request, Path: /api/ups/getFromLocations, Body: b'{}'
+2023-11-27 17:18:52,848 INFO Status Code: 401
+2023-11-27 17:18:52,856 WARNING Unauthorized: /api/bigcommerce/isAuth
+2023-11-27 17:18:52,918 INFO Status Code: 200
+2023-11-27 17:18:52,969 INFO Status Code: 200
+2023-11-27 17:18:52,994 INFO Status Code: 200
+2023-11-27 17:18:53,053 INFO Status Code: 200

@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 from django.shortcuts import render
 from django.http.response import JsonResponse
-from .models import FromLocation, CarrierUsers, StoreUsers
+from .models import FromLocation, CarrierUsers, StoreUsers, Users_UPS_details
 from .decorators import log_api_activity
 from rest_framework.parsers import JSONParser
 from rest_framework import status
@@ -256,7 +256,6 @@ def user_signin(request):
     if user is None:
         return JsonResponse({'result': 'User not found!'},
                             status=status.HTTP_401_UNAUTHORIZED)
-    from django.contrib.auth.hashers import make_password
     if not user.check_user_password(request.data['password']):
         return JsonResponse({'result': 'Incorrect password!'},
                             status=status.HTTP_401_UNAUTHORIZED)
@@ -759,3 +758,42 @@ def my_cron_job():
                 return sent
             except SMTPException as e:
                 logging.info('There was an error sending an email: ', e)
+        
+class UPS_users_account_details(APIView):
+    @log_api_activity
+    def get(self,request,formate=None) :
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        user_id = getUserIdByToken(auth_header)
+        user = Users.objects.get(id=user_id)
+        if not user : 
+            return Response({"message": " User not found or unauthorised !"},status=status.HTTP_200_OK)
+        useruseracc = Users_UPS_details.objects.filter(user=user)
+        if not useruseracc:
+            if not "@" in request.data['email'] or not "." in request.data['email']:
+                return Response({"message": "User's ups email is not valid !"},status=status.HTTP_200_OK)
+            if not request.data['phone'].isdigit() and len(request.data['phone']) > 10:
+                return Response({"message": "User's ups number is not valid !"},status=status.HTTP_200_OK)
+            if not request.data['zip_code'].isdigit() and len(request.data['zip_code']) > 10:
+                return Response({"message": "User's ups zip_code is not valid !"},status=status.HTTP_200_OK)
+            if not request.data['postcode'].isdigit() and len(request.data['postcode']) > 10:
+                return Response({"message": "User's ups postcode is not valid !"},status=status.HTTP_200_OK)
+
+            Users_UPS_details.objects.create(
+
+                user = user
+                ,account_nickname = request.data['phone']
+                ,fullname = request.data['fullname']
+                ,company_name = request.data['company_name']
+                ,email = request.data['email']
+                ,phone = int(request.data['phone'])
+                ,street1 = request.data['street1']
+                ,street2 = request.data['street2']
+                ,city = request.data['city']
+                ,state = request.data['state']
+                ,country1 = request.data['country']
+                ,zip_code = int(request.data['zip_code'])
+                ,UPS_account_number = request.data['UPS_account_number']
+                ,postcode = int(request.data['postcode'])
+                ,counrty2 = request.data['counrty']
+            )
+        return Response({"message":"UPS data has been saved successfully !"},status=status.HTTP_200_OK)
