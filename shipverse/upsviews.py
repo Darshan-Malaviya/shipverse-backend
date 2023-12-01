@@ -2,7 +2,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from shipverse.models import CarrierUsers, FromLocation, Shipment, ShipperLocation, Packages, Taxes, InternationalSettings
+from shipverse.models import CarrierUsers, FromLocation, Shipment, ShipperLocation, Packages, Taxes, InternationalSettings, Users, Users_UPS_details
 import requests
 import base64
 from django.db.models import Q
@@ -17,6 +17,9 @@ from functools import wraps
 import itertools
 import jwt
 from jwt.exceptions import ExpiredSignatureError
+
+from shipverse.serializers import UPSSerializer
+from django.core.serializers import serialize
 from .decorators import log_api_activity
 @log_api_activity
 @api_view(['POST'])
@@ -205,34 +208,18 @@ def addUser(request):
 @log_api_activity
 @api_view(['POST'])
 def getUsers(request):
-    user_data = JSONParser().parse(request)
     auth_header = request.META.get('HTTP_AUTHORIZATION')
     user_id = getUserIdByToken(auth_header)
-    shipperlocations = ShipperLocation.objects.filter(userId=user_id)
-
-    shipperlocations_dict = []
-    for shipperlocation in shipperlocations:
-        shipperlocation_dict = {
-            'id': shipperlocation.id,
-            'userId': shipperlocation.userId,
-            'fullName': shipperlocation.fullName,
-            'attentionname': shipperlocation.attentionname,
-            'taxidnum': shipperlocation.taxidnum,
-            'phone': shipperlocation.phone,
-            'accountNumber': shipperlocation.shipperno,
-            'fax': shipperlocation.fax,
-            'address': shipperlocation.address,
-            'city': shipperlocation.city,
-            'statecode': shipperlocation.statecode,
-            'postalcode': shipperlocation.postalcode,
-            'countrycode': shipperlocation.countrycode,
-            'selected': shipperlocation.selected,
-            # Add more fields as needed
-        }
-        shipperlocations_dict.append(shipperlocation_dict)
-    # Create a JSON object containing the list of dictionaries
-    json_data = json.dumps({'carriers': shipperlocations_dict})
-    return JsonResponse(json_data, status=status.HTTP_200_OK, safe=False)
+    user = Users.objects.get(id=user_id)
+    if not user : 
+        return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
+    registeredCarriers = Users_UPS_details.objects.filter(user=user)
+    serialized = UPSSerializer(registeredCarriers,many=True)
+    return JsonResponse({
+        "isSuccess":True,
+        "message":None,
+        "data":serialized.data
+    }, status=status.HTTP_200_OK, safe=False)
 
 @log_api_activity
 @api_view(['POST'])

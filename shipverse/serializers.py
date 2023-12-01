@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from shipverse.models import Users,  StoreUsers, CarrierUsers, FromLocation, Shipment, ShipperLocation, InternationalSettings, Taxes
+from shipverse.models import Users,  StoreUsers, CarrierUsers, FromLocation, Shipment, ShipperLocation, InternationalSettings, Taxes, Users_UPS_details
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -47,4 +47,10 @@ class InternationalSettingsSerializer(serializers.ModelSerializer):
 class TaxesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Taxes
+        fields = '__all__'
+
+
+class UPSSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users_UPS_details
         fields = '__all__'

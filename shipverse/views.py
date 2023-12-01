@@ -1,26 +1,18 @@
 from __future__ import print_function
-from django.shortcuts import render
 
-from django.shortcuts import render
 from django.http.response import JsonResponse
-from .models import FromLocation, CarrierUsers, StoreUsers, Users_UPS_details
+import requests
+from .models import Users_UPS_details
 from .decorators import log_api_activity
-from rest_framework.parsers import JSONParser
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from shipverse.models import Users, VerificationTokens, ResetPasswordTokens, InviteTokens, Subscriptions
-from shipverse.serializers import UsersSerializer
 from rest_framework.decorators import api_view
 import re
 import json
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.template import loader
-from django.core.mail import EmailMessage, get_connection
 from django.core.mail import send_mail
-
-from django.contrib.auth.tokens import default_token_generator
+from DjangoRestApisPostgreSQL import settings
 from django.conf import settings
 from shipverse.auth import create_access_token, create_refresh_token,  is_expired, getUserIdByToken
 from datetime import timedelta
@@ -760,40 +752,27 @@ def my_cron_job():
                 logging.info('There was an error sending an email: ', e)
         
 class UPS_users_account_details(APIView):
-    @log_api_activity
-    def get(self,request,formate=None) :
+
+    def post(self,request) :
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         user_id = getUserIdByToken(auth_header)
         user = Users.objects.get(id=user_id)
         if not user : 
-            return Response({"message": " User not found or unauthorised !"},status=status.HTTP_200_OK)
-        useruseracc = Users_UPS_details.objects.filter(user=user)
-        if not useruseracc:
-            if not "@" in request.data['email'] or not "." in request.data['email']:
-                return Response({"message": "User's ups email is not valid !"},status=status.HTTP_200_OK)
-            if not request.data['phone'].isdigit() and len(request.data['phone']) > 10:
-                return Response({"message": "User's ups number is not valid !"},status=status.HTTP_200_OK)
-            if not request.data['zip_code'].isdigit() and len(request.data['zip_code']) > 10:
-                return Response({"message": "User's ups zip_code is not valid !"},status=status.HTTP_200_OK)
-            if not request.data['postcode'].isdigit() and len(request.data['postcode']) > 10:
-                return Response({"message": "User's ups postcode is not valid !"},status=status.HTTP_200_OK)
+            return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
 
-            Users_UPS_details.objects.create(
-
-                user = user
-                ,account_nickname = request.data['phone']
-                ,fullname = request.data['fullname']
-                ,company_name = request.data['company_name']
-                ,email = request.data['email']
-                ,phone = int(request.data['phone'])
-                ,street1 = request.data['street1']
-                ,street2 = request.data['street2']
-                ,city = request.data['city']
-                ,state = request.data['state']
-                ,country1 = request.data['country']
-                ,zip_code = int(request.data['zip_code'])
-                ,UPS_account_number = request.data['UPS_account_number']
-                ,postcode = int(request.data['postcode'])
-                ,counrty2 = request.data['counrty']
-            )
-        return Response({"message":"UPS data has been saved successfully !"},status=status.HTTP_200_OK)
+        Users_UPS_details.objects.create(
+            user = user
+            ,account_nickname = request.data['account_nickname']
+            ,fullname = request.data['fullname']
+            ,company_name = request.data['company_name']
+            ,email = request.data['email']
+            ,phone = int(request.data['phone'])
+            ,street1 = request.data['street1']
+            ,street2 = request.data['street2']
+            ,city = request.data['city']
+            ,state = request.data['state']
+            ,zip_code = int(request.data['zip_code'])
+            ,UPS_account_number = request.data['UPS_account_number']
+            ,postcode = int(request.data['postcode'])
+        )
+        return Response({},status=status.HTTP_200_OK)

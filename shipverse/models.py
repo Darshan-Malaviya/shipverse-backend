@@ -180,7 +180,7 @@ class Users_UPS_details(models.Model):
     fullname = models.CharField(max_length=250)
     company_name = models.CharField(max_length=250)
     email = models.EmailField()
-    phone = models.IntegerField()
+    phone = models.BigIntegerField()
     street1 = models.CharField(max_length=250)
     street2 = models.CharField(max_length=250,blank=True,null=True)
     city = models.CharField(max_length=250)
