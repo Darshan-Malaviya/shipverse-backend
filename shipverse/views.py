@@ -763,7 +763,7 @@ class UPS_users_account_details(APIView):
         Users_UPS_details.objects.create(
             user = user
             ,account_nickname = request.data['account_nickname']
-            ,fullname = request.data['fullname']
+            ,fullName = request.data['fullname']
             ,company_name = request.data['company_name']
             ,email = request.data['email']
             ,phone = int(request.data['phone'])
@@ -772,7 +772,7 @@ class UPS_users_account_details(APIView):
             ,city = request.data['city']
             ,state = request.data['state']
             ,zip_code = int(request.data['zip_code'])
-            ,UPS_account_number = request.data['UPS_account_number']
+            ,accountNumber = request.data['UPS_account_number']
             ,postcode = int(request.data['postcode'])
         )
         return Response({},status=status.HTTP_200_OK)

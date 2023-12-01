@@ -177,7 +177,7 @@ class Shop(models.Model):
 class Users_UPS_details(models.Model):
     user = models.ForeignKey(Users,on_delete=models.CASCADE)
     account_nickname = models.CharField(max_length=250,blank=True,null=True)
-    fullname = models.CharField(max_length=250)
+    fullName = models.CharField(max_length=250)
     company_name = models.CharField(max_length=250)
     email = models.EmailField()
     phone = models.BigIntegerField()
@@ -187,6 +187,6 @@ class Users_UPS_details(models.Model):
     state  = models.CharField(max_length=250)
     country1 = models.CharField(max_length=250)
     zip_code = models.IntegerField()
-    UPS_account_number = models.CharField(max_length=250)
+    accountNumber = models.CharField(max_length=250)
     postcode = models.IntegerField()
     counrty2 = models.CharField(max_length=20)
