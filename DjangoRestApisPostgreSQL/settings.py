@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'DjangoRestApisPostgreSQL.wsgi.application'
 ALLOWED_HOSTS = ["170.187.179.126", "www.app.goshipverse.com", "app.goshipverse.com",
                  "https://app.goshipverse.com", "localhost", "https://www.app.goshipverse.com", "127.0.0.1", ".ngrok-free.app", "*"]
 DEBUG = True
-Environment = True
+Environment = False
 if Environment:
     # Development database settings
     DATABASES = {
