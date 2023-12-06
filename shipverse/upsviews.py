@@ -2,7 +2,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
-from shipverse.models import CarrierUsers, FromLocation, Shipment, ShipperLocation, Packages, Taxes, InternationalSettings, Users, Users_UPS_details
+from shipverse.models import CarrierUsers, FromLocation, Shipment, ShipperLocation, Packages, Taxes, InternationalSettings, Users, UserCarrier
 import requests
 import base64
 from django.db.models import Q
@@ -213,7 +213,7 @@ def getUsers(request):
     user = Users.objects.get(id=user_id)
     if not user : 
         return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
-    registeredCarriers = Users_UPS_details.objects.filter(user=user)
+    registeredCarriers = UserCarrier.objects.filter(user=user)
     serialized = UPSSerializer(registeredCarriers,many=True)
     return JsonResponse({
         "isSuccess":True,
@@ -227,10 +227,13 @@ def removeUser(request):
     user_data = JSONParser().parse(request)
     auth_header = request.META.get('HTTP_AUTHORIZATION')
     user_id = getUserIdByToken(auth_header)
+    user = Users.objects.get(id=user_id)
+    if not user : 
+        return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
     shipperno = user_data['shipperno']
     try:
-        shipperLocation = ShipperLocation.objects.get(
-            userId=user_id, shipperno=shipperno)
+        shipperLocation = UserCarrier.objects.get(
+            user=user, accountNumber=shipperno)
     except:
         return JsonResponse({'success': False}, status=status.HTTP_404_NOT_FOUND)
     shipperLocation.delete()

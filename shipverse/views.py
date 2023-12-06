@@ -1,8 +1,10 @@
 from __future__ import print_function
+import base64
 
 from django.http.response import JsonResponse
 import requests
-from .models import Users_UPS_details
+import xmltodict
+from .models import UserCarrier
 from .decorators import log_api_activity
 from rest_framework import status
 from rest_framework.views import APIView
@@ -756,23 +758,53 @@ class UPS_users_account_details(APIView):
     def post(self,request) :
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         user_id = getUserIdByToken(auth_header)
-        user = Users.objects.get(id=user_id)
+        user = Users.objects.get(id=3)
         if not user : 
             return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
-
-        Users_UPS_details.objects.create(
-            user = user
-            ,account_nickname = request.data['account_nickname']
-            ,fullName = request.data['fullname']
-            ,company_name = request.data['company_name']
-            ,email = request.data['email']
-            ,phone = int(request.data['phone'])
-            ,street1 = request.data['street1']
-            ,street2 = request.data['street2']
-            ,city = request.data['city']
-            ,state = request.data['state']
-            ,zip_code = int(request.data['zip_code'])
-            ,accountNumber = request.data['UPS_account_number']
-            ,postcode = int(request.data['postcode'])
+        
+        user_carrier = UserCarrier.objects.create(
+            user = user,
+            carrier = request.data['carrier'],
+            fullName = request.data['fullname'],
+            company_name = request.data['company_name'],
+            email = request.data['email'],
+            phone = int(request.data['phone']),
+            street1 = request.data['street1'],
+            street2 = request.data['street2'],
+            city = request.data['city'],
+            state = request.data['state'],
+            zip_code = int(request.data['zip_code']),
+            account_nickname = request.data['account_nickname'],
+            account_number = request.data['account_number'],
+            country = request.data["country"],
+            postcode = int(request.data['postcode'])
         )
+        if(user_carrier.carrier == "canadapost"):
+            url = "https://ct.soa-gw.canadapost.ca/ot/token"
+            cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
+            result = requests.post(url=url,data=None,headers={
+                "Accept":"application/vnd.cpc.registration-v2+xml",
+                "Content-Type":"application/vnd.cpc.registration-v2+xml",
+                "Authorization":"Basic "+ cred.decode("ascii"),
+                "Accept-language":"en-CA"
+            })
+            jsonDecoded = xmltodict.parse(result.content)
+            print(jsonDecoded)
+            redirectUrl = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
+            if(result.status_code == 200):
+                response = {
+                    "isSuccess":True,
+                    "message":None,
+                    "data":{
+                        "redirectUrl":redirectUrl+"?token-id="+jsonDecoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/application/settings/onboard"
+                    }
+                }
+            else:
+                response = {
+                    "isSuccess":False,
+                    "message":jsonDecoded["messages"]["message"],
+                    "data":None
+                }
+            return Response(response,status=status.HTTP_200_OK)
+
         return Response({},status=status.HTTP_200_OK)

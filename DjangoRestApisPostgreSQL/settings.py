@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'DjangoRestApisPostgreSQL.wsgi.application'
 ALLOWED_HOSTS = ["170.187.179.126", "www.app.goshipverse.com", "app.goshipverse.com",
                  "https://app.goshipverse.com", "localhost", "https://www.app.goshipverse.com", "127.0.0.1", ".ngrok-free.app", "*"]
 DEBUG = True
-Environment = False
+Environment = True
 if Environment:
     # Development database settings
     DATABASES = {
@@ -113,6 +113,9 @@ if Environment:
     STRIPE_API_KEY = env('stripe_api_key_debug')
     STRIPE_PRICE_ID = env('stripe_price_id_debug')
     WEBHOOK_SECRET = env('webhook_secret_debug')
+
+    CANADAPOST_USERNAME = env('canadapost_username_debug')
+    CANADAPOST_PASSWORD = env('canadapost_passoword_debug')
 else:
     # Production database settings
     DATABASES = {
@@ -141,6 +144,9 @@ else:
     STRIPE_API_KEY = env('stripe_api_key')
     STRIPE_PRICE_ID = env('stripe_price_id')
     WEBHOOK_SECRET = env('webhook_secret')
+    
+    CANADAPOST_USERNAME = env('canadapost_username')
+    CANADAPOST_PASSWORD = env('canadapost_passoword')
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

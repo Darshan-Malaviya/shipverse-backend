@@ -174,9 +174,9 @@ class Shop(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Users_UPS_details(models.Model):
+class UserCarrier(models.Model):
     user = models.ForeignKey(Users,on_delete=models.CASCADE)
-    account_nickname = models.CharField(max_length=250,blank=True,null=True)
+    carrier = models.CharField(max_length=20)
     fullName = models.CharField(max_length=250)
     company_name = models.CharField(max_length=250)
     email = models.EmailField()
@@ -187,6 +187,7 @@ class Users_UPS_details(models.Model):
     state  = models.CharField(max_length=250)
     country1 = models.CharField(max_length=250)
     zip_code = models.IntegerField()
-    accountNumber = models.CharField(max_length=250)
+    account_number = models.CharField(max_length=250)
+    account_nickname = models.CharField(max_length=250,blank=True,null=True)
+    country = models.CharField(max_length=20)
     postcode = models.IntegerField()
-    counrty2 = models.CharField(max_length=20)
