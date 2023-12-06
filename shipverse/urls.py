@@ -97,6 +97,7 @@ urlpatterns = [
     #             upsviews.labelRecovery),
     
     re_path(r'^application/settings/CheckReturnOnBoard$', views.CheckReturnOnBoardView.as_view()),
-    re_path(r'^api/ups/adduserdetails', views.UPS_users_account_details.as_view())
+    re_path(r'^api/carrier/addCarrier', views.UPS_users_account_details.as_view()),
+    re_path(r'^api/carrier/verifyCP', views.verify_canadapost_registration)
     
 ]

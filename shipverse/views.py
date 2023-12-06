@@ -752,34 +752,36 @@ def my_cron_job():
                 return sent
             except SMTPException as e:
                 logging.info('There was an error sending an email: ', e)
+
+def add_carrier_user(user, data):
+    return UserCarrier.objects.create(
+        user = user,
+        carrier = data['carrier'],
+        fullName = data['fullname'],
+        company_name = data['company_name'],
+        email = data['email'],
+        phone = int(data['phone']),
+        street1 = data['street1'],
+        street2 = data['street2'],
+        city = data['city'],
+        state = data['state'],
+        zip_code = int(data['zip_code']),
+        account_nickname = data['account_nickname'],
+        account_number = data['account_number'],
+        country = data["country"],
+        postcode = int(data['postcode'])
+    )
         
 class UPS_users_account_details(APIView):
 
     def post(self,request) :
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         user_id = getUserIdByToken(auth_header)
-        user = Users.objects.get(id=3)
+        user = Users.objects.get(id=user_id)
         if not user : 
             return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
         
-        user_carrier = UserCarrier.objects.create(
-            user = user,
-            carrier = request.data['carrier'],
-            fullName = request.data['fullname'],
-            company_name = request.data['company_name'],
-            email = request.data['email'],
-            phone = int(request.data['phone']),
-            street1 = request.data['street1'],
-            street2 = request.data['street2'],
-            city = request.data['city'],
-            state = request.data['state'],
-            zip_code = int(request.data['zip_code']),
-            account_nickname = request.data['account_nickname'],
-            account_number = request.data['account_number'],
-            country = request.data["country"],
-            postcode = int(request.data['postcode'])
-        )
-        if(user_carrier.carrier == "canadapost"):
+        if(request.data['carrier']):
             url = "https://ct.soa-gw.canadapost.ca/ot/token"
             cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
             result = requests.post(url=url,data=None,headers={
@@ -788,23 +790,45 @@ class UPS_users_account_details(APIView):
                 "Authorization":"Basic "+ cred.decode("ascii"),
                 "Accept-language":"en-CA"
             })
-            jsonDecoded = xmltodict.parse(result.content)
-            print(jsonDecoded)
-            redirectUrl = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
+            json_decoded = xmltodict.parse(result.content)
+            redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/merchant"
             if(result.status_code == 200):
+                user_carrier = add_carrier_user(user, request.data)
                 response = {
                     "isSuccess":True,
                     "message":None,
                     "data":{
-                        "redirectUrl":redirectUrl+"?token-id="+jsonDecoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/application/settings/onboard"
+                        "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/cpVerify"
                     }
                 }
             else:
                 response = {
                     "isSuccess":False,
-                    "message":jsonDecoded["messages"]["message"],
+                    "message":json_decoded["messages"]["message"],
                     "data":None
                 }
             return Response(response,status=status.HTTP_200_OK)
-
+        else:
+            add_carrier_user(user, request.data)
         return Response({},status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def verify_canadapost_registration(request):
+    token_id = request.data["tokenId"]
+    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    user_id = getUserIdByToken(auth_header)
+    user = Users.objects.get(id=user_id)
+    if not user : 
+        return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
+    
+    url = "https://ct.soa-gw.canadapost.ca/ot/token/"+token_id
+    cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
+    result = requests.post(url=url,data=None,headers={
+        "Accept":"application/vnd.cpc.registration-v2+xml",
+        "Content-Type":"application/vnd.cpc.registration-v2+xml",
+        "Authorization":"Basic "+ cred.decode("ascii"),
+        "Accept-language":"en-CA"
+    })
+    json_decoded = xmltodict.parse(result.content)
+    return Response(json_decoded,status=status.HTTP_200_OK)
+
