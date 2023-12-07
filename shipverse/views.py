@@ -779,10 +779,10 @@ class UPS_users_account_details(APIView):
         user_id = getUserIdByToken(auth_header)
         user = Users.objects.get(id=user_id)
         if not user : 
-            return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
+            return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
         
         if(request.data['carrier']):
-            url = "https://ct.soa-gw.canadapost.ca/ot/token"
+            url = "https://soa-gw.canadapost.ca/ot/token"
             cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
             result = requests.post(url=url,data=None,headers={
                 "Accept":"application/vnd.cpc.registration-v2+xml",
@@ -819,9 +819,9 @@ def verify_canadapost_registration(request):
     user_id = getUserIdByToken(auth_header)
     user = Users.objects.get(id=user_id)
     if not user : 
-        return Response({"message": " User not found or Unauthorized !"},status=status.HTTP_200_OK)
+        return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
     
-    url = "https://ct.soa-gw.canadapost.ca/ot/token/"+token_id
+    url = "https://soa-gw.canadapost.ca/ot/token/"+token_id
     cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
     result = requests.post(url=url,data=None,headers={
         "Accept":"application/vnd.cpc.registration-v2+xml",
@@ -830,5 +830,17 @@ def verify_canadapost_registration(request):
         "Accept-language":"en-CA"
     })
     json_decoded = xmltodict.parse(result.content)
-    return Response(json_decoded,status=status.HTTP_200_OK)
+    if(result.status_code == 200):
+        response = {
+            "isSuccess":True,
+            "message":"",
+            "data":json_decoded["merchant-info"]
+        }
+    else:
+        response = {
+            "isSuccess":False,
+            "message":json_decoded["messages"]["message"],
+            "data":None
+        }
+    return Response(response,status=status.HTTP_200_OK)
 

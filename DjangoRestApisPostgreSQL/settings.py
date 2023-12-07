@@ -145,8 +145,8 @@ else:
     STRIPE_PRICE_ID = env('stripe_price_id')
     WEBHOOK_SECRET = env('webhook_secret')
     
-    CANADAPOST_USERNAME = env('canadapost_username_debug')
-    CANADAPOST_PASSWORD = env('canadapost_passoword_debug')
+    CANADAPOST_USERNAME = env('canadapost_username')
+    CANADAPOST_PASSWORD = env('canadapost_passoword')
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
