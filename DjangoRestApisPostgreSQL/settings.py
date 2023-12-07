@@ -115,7 +115,7 @@ if Environment:
     WEBHOOK_SECRET = env('webhook_secret_debug')
 
     CANADAPOST_USERNAME = env('canadapost_username_debug')
-    CANADAPOST_PASSWORD = env('canadapost_passoword_debug')
+    CANADAPOST_PASSWORD = env('canadapost_password_debug')
 else:
     # Production database settings
     DATABASES = {
@@ -146,7 +146,7 @@ else:
     WEBHOOK_SECRET = env('webhook_secret')
     
     CANADAPOST_USERNAME = env('canadapost_username_debug')
-    CANADAPOST_PASSWORD = env('canadapost_username_debug')
+    CANADAPOST_PASSWORD = env('canadapost_password_debug')
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
