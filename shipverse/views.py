@@ -782,7 +782,7 @@ class UPS_users_account_details(APIView):
             return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
         
         if(request.data['carrier']):
-            url = "https://soa-gw.canadapost.ca/ot/token"
+            url = "https://ct.soa-gw.canadapost.ca/ot/token"
             cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
             result = requests.post(url=url,data=None,headers={
                 "Accept":"application/vnd.cpc.registration-v2+xml",
@@ -791,7 +791,7 @@ class UPS_users_account_details(APIView):
                 "Accept-language":"en-CA"
             })
             json_decoded = xmltodict.parse(result.content)
-            redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/merchant"
+            redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
             if(result.status_code == 200):
                 user_carrier = add_carrier_user(user, request.data)
                 response = {
@@ -821,7 +821,7 @@ def verify_canadapost_registration(request):
     if not user : 
         return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
     
-    url = "https://soa-gw.canadapost.ca/ot/token/"+token_id
+    url = "https://ct.soa-gw.canadapost.ca/ot/token/"+token_id
     cred = base64.b64encode(str(settings.CANADAPOST_USERNAME + ":" + settings.CANADAPOST_PASSWORD).encode("ascii"))
     result = requests.post(url=url,data=None,headers={
         "Accept":"application/vnd.cpc.registration-v2+xml",
