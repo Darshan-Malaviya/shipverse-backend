@@ -4,6 +4,7 @@ from . import views
 from . import bigcommerceviews
 from . import upsviews
 from . import shopifyviews
+from . import canadapost_views
 
 urlpatterns = [
     re_path(r'^api/users/signin$', views.user_signin),
@@ -99,7 +100,7 @@ urlpatterns = [
     #             upsviews.labelRecovery),
     
     re_path(r'^application/settings/CheckReturnOnBoard$', views.CheckReturnOnBoardView.as_view()),
-    re_path(r'^api/carrier/addCarrier', views.UPS_users_account_details.as_view()),
-    re_path(r'^api/carrier/verifyCP', views.verify_canadapost_registration)
+    re_path(r'^api/carrier/addCarrier', canadapost_views.canada_users_account_details.as_view()),
+    re_path(r'^api/carrier/verifyCP', canadapost_views.VerifyCanadaPost.as_view())
     
 ]
