@@ -1,0 +1,27 @@
+canadapost_username_debug=9b1ce8703aa993b5
+canadapost_password_debug=98bad854f9b7d11d879e27
+canadapost_username=8dc9354684625c4f
+canadapost_password=6e26617dfe0bef1d9f55a9
+canadapost_dev=ct.soa-gw.canadapost.ca
+canadapost_prod=soa-gw.canadapost.ca
+DB_NAME=shipverse_data
+DB_USER=postgres
+DB_PASSWORD=Vayak@123
+DB_HOST=localhost
+DB_PORT=5432
+# EMAIL_ADDRESS=pythonandreactjsdeveloper@gmail.com
+# EMAIL_PASSWORD=gfclaetztlnpyssl
+
+# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+# EMAIL_HOST=smtp.gmail.com
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER=pythonandreactjsdeveloper@gmail.com
+# EMAIL_HOST_PASSWORD=gfclaetztlnpyssl
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "pythonandreactjsdeveloper@gmail.com"
+EMAIL_HOST_PASSWORD = "gfcl aetz tlnp yssl"

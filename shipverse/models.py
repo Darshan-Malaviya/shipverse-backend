@@ -7,14 +7,14 @@ from django.contrib.auth.hashers import make_password, check_password
 class Users(models.Model):
     username = models.CharField(
         max_length=70, blank=False, default='', unique=True)
-    fullName = models.CharField(max_length=70, blank=True, default='')
-    email = models.EmailField(max_length=70, blank=True, default='')
-    password = models.CharField(max_length=500, default='')
-    phone = models.CharField(max_length=70, blank=True, default='')
-    usertype = models.CharField(max_length=70, blank=True, default='')
-    roles = models.CharField(max_length=70, default='')
-    parentuser = models.CharField(max_length=70, default='')
-    customerId = models.CharField(max_length=70, default='')
+    fullName = models.CharField(max_length=70, null=True)
+    email = models.EmailField(max_length=70, null=True)
+    password = models.CharField(max_length=500, null=True)
+    phone = models.CharField(max_length=70, null=True)
+    usertype = models.CharField(max_length=70, null=True)
+    roles = models.CharField(max_length=70, null=True)
+    parentuser = models.CharField(max_length=70, null=True)
+    customerId = models.CharField(max_length=70, null=True)
     active = models.BooleanField(default=False)
     isEmailVerified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now=True)
@@ -24,6 +24,9 @@ class Users(models.Model):
     
     def check_user_password(self, raw_password):
         return check_password(raw_password,self.password)
+
+    def __str__(self) -> str:
+        return self.username
 
 
 class VerificationTokens(models.Model):

@@ -20,8 +20,8 @@ from jwt.exceptions import ExpiredSignatureError
 
 from shipverse.serializers import UPSSerializer
 from django.core.serializers import serialize
-from .decorators import log_api_activity
-@log_api_activity
+
+
 @api_view(['POST'])
 def isUPSAuth(request):
     user_data = JSONParser().parse(request)
@@ -38,7 +38,7 @@ def isUPSAuth(request):
     else:
         return JsonResponse({'isAuthorized': True})
 
-@log_api_activity
+
 @api_view(['POST'])
 def validate(request):
     user_data = JSONParser().parse(request)
@@ -53,7 +53,7 @@ def validate(request):
     data = response.json()
     return JsonResponse(data)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getToken(request):
     user_data = JSONParser().parse(request)
@@ -108,7 +108,7 @@ def getToken(request):
         return JsonResponse(data)
     return JsonResponse({"result": "failed"})
 
-@log_api_activity
+
 @api_view(['POST'])
 def refreshToken(request):
     user_data = JSONParser().parse(request)
@@ -155,7 +155,7 @@ def refreshToken(request):
         return JsonResponse(data)
     return JsonResponse({'data': response.json()}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def disconnect(request):
     user_data = JSONParser().parse(request)
@@ -171,7 +171,7 @@ def disconnect(request):
     carrieruser.save()
     return JsonResponse({'isAuthorized': False}, status=status.HTTP_401_UNAUTHORIZED)
 
-@log_api_activity
+
 @api_view(['POST'])
 def addUser(request):
     user_data = JSONParser().parse(request)
@@ -205,7 +205,7 @@ def addUser(request):
     other_shipper_locations.update(selected=False)
     return JsonResponse({'saved': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getUsers(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -221,7 +221,7 @@ def getUsers(request):
         "data":serialized.data
     }, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def removeUser(request):
     user_data = JSONParser().parse(request)
@@ -239,7 +239,7 @@ def removeUser(request):
     shipperLocation.delete()
     return JsonResponse({'success': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def addPackage(request):
     user_data = JSONParser().parse(request)
@@ -264,7 +264,7 @@ def addPackage(request):
     package.save()
     return JsonResponse({'saved': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def updatePackage(request):
     user_data = JSONParser().parse(request)
@@ -289,7 +289,7 @@ def updatePackage(request):
     package.save()
     return JsonResponse({'saved': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getPackages(request):
     user_data = JSONParser().parse(request)
@@ -317,7 +317,7 @@ def getPackages(request):
     json_data = json.dumps({'packages': packages_dict})
     return JsonResponse(json_data, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def removePackage(request):
     user_data = JSONParser().parse(request)
@@ -332,7 +332,7 @@ def removePackage(request):
     package.delete()
     return JsonResponse({'success': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def makeDefaultUser(request):
     user_data = JSONParser().parse(request)
@@ -352,7 +352,7 @@ def makeDefaultUser(request):
     other_shipper_locations.update(selected=False)
     return JsonResponse({'success': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def addFromLocation(request):
     user_data = JSONParser().parse(request)
@@ -394,7 +394,7 @@ def addFromLocation(request):
     fromlocation.save()
     return JsonResponse({'result': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def updateFromLocation(request):
     user_data = JSONParser().parse(request)
@@ -441,7 +441,7 @@ def updateFromLocation(request):
     fromlocation.save()
     return JsonResponse({'result': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def deleteFromLocation(request):
     user_data = JSONParser().parse(request)
@@ -458,7 +458,7 @@ def deleteFromLocation(request):
     fromlocation.delete()
     return JsonResponse({'success': True}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getFromLocations(request):
     user_data = JSONParser().parse(request)
@@ -507,7 +507,7 @@ def getFromLocations(request):
     json_data = json.dumps({'fromLocations': fromLocations_dict_list})
     return JsonResponse(json_data, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def checkAddressValidation(request):
     user_data = JSONParser().parse(request)
@@ -558,7 +558,7 @@ def checkAddressValidation(request):
         return JsonResponse({"result": "Failed", "data": data['response']['errors'][0]['message']}, status=status.HTTP_401_UNAUTHORIZED)
     return JsonResponse({"result": "Success", "data": data}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getLabel(request):
     user_data = JSONParser().parse(request)
@@ -575,7 +575,7 @@ def getLabel(request):
 
     return JsonResponse({"image": shipment.image}, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getInvoice(request):
     user_data = JSONParser().parse(request)
@@ -592,7 +592,7 @@ def getInvoice(request):
 
     return JsonResponse({"invoice": shipment.invoice}, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getOrderRate(request):
     user_data = JSONParser().parse(request)
@@ -749,7 +749,7 @@ def getOrderRate(request):
     data = response.json()
     return JsonResponse({"result": "success", "data": data}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getRateServices(request):
     user_data = JSONParser().parse(request)
@@ -857,7 +857,7 @@ def getRateServices(request):
     data = response.json()
     return JsonResponse({"result": "success", "data": data}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getOrderRates(request):
     user_data = JSONParser().parse(request)
@@ -1014,7 +1014,7 @@ def getOrderRates(request):
                 rates_dict_list.append(rate_dict_list)
     return JsonResponse({"result": "success", "data": rates_dict_list}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def createLabel(request):
     user_data = JSONParser().parse(request)
@@ -1369,7 +1369,7 @@ def createLabel(request):
     shipment.save()
     return JsonResponse({"data": "Label Created", "carrier": "UPS", "trackingnumber": trackingnumber, "trackingurl": labelurl}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def addTax(request):
     user_data = JSONParser().parse(request)
@@ -1389,7 +1389,7 @@ def addTax(request):
     tax.save()
     return JsonResponse({'result': 'success'}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def deleteTax(request):
     user_data = JSONParser().parse(request)
@@ -1404,7 +1404,7 @@ def deleteTax(request):
     tax.delete()
     return JsonResponse({'result': 'success'}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getTaxes(request):
     user_data = JSONParser().parse(request)
@@ -1429,7 +1429,7 @@ def getTaxes(request):
     json_data = json.dumps({'result': 'success', 'data': taxes_dict})
     return JsonResponse(json_data, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def saveInternationalSettings(request):
     user_data = JSONParser().parse(request)
@@ -1450,7 +1450,7 @@ def saveInternationalSettings(request):
     setting.save()
     return JsonResponse({'result': 'success'}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getInternationalSettings(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -1470,7 +1470,7 @@ def getInternationalSettings(request):
     json_data = json.dumps({'result': 'success', 'data': return_data})
     return JsonResponse(json_data, status=status.HTTP_200_OK, safe=False)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getAddress(request):
     user_data = JSONParser().parse(request)
@@ -1489,7 +1489,7 @@ def getAddress(request):
         # Handle error response
         return JsonResponse({'result': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
 
-@log_api_activity
+
 @api_view(['POST'])
 def addressValidation(request):
     user_data = JSONParser().parse(request)

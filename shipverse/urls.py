@@ -9,8 +9,10 @@ urlpatterns = [
     re_path(r'^api/users/signin$', views.user_signin),
     re_path(r'^api/users/signup$', views.user_create),
     re_path(r'^api/users/update$', views.user_update),
+    
     path('api/users/verify/<str:token>/', views.verifyEmail),
     path('api/users/forgotpassword/<str:email>/', views.forgotPassword),
+    path('api/users/existforegettoken/<str:token>/',views.existforgettoken),
     re_path(r'^api/users/is_jwt_expired$', views.is_jwt_expired),
     re_path(r'^api/users/getchildaccounts$', views.getchildaccounts),
     path('api/users/resetpassword', views.resetPassword),
