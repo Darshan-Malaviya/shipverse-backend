@@ -614,7 +614,7 @@ class UPS_users_account_details(APIView):
         return Response({},status=status.HTTP_200_OK)
     
 
-@api_view(['GET'])
+@api_view(['POST'])
 def verify_canadapost_registration(request):
     token_id = request.data["tokenId"]
     auth_header = request.META.get('HTTP_AUTHORIZATION')
