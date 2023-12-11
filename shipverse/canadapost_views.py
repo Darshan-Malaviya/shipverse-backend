@@ -17,7 +17,7 @@ class canada_users_account_details(APIView):
         print(auth_header)
         user_id = getUserIdByToken(auth_header)
         user = Users.objects.get(id=user_id)
-        if not user : 
+        if not user :
             return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
         
         if(request.data['carrier']):
