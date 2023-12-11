@@ -40,6 +40,7 @@ def createEmailToken(email):
                 raise APIException(detail='Internal Server Error', code='500')
 
     except VerificationTokens.DoesNotExist:
+        print("verification token")
         current_timestamp = str(int(datetime.datetime.now().timestamp()))
         current_date = datetime.datetime.now().date()
         token = VerificationTokens(
@@ -96,6 +97,7 @@ def sendVerificationEmail(email, token):
 def inviteMailToken(username, email):
     try:
         row = InviteTokens.objects.get(username=username, email=email)
+        print("invite -> ", row)
         current_timestamp = datetime.datetime.now().timestamp()
         difference = current_timestamp - row.emailInviteDate.timestamp()
         if (difference / 60000) < 1:

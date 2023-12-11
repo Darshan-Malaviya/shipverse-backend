@@ -53,6 +53,9 @@ urlpatterns = [
             bigcommerceviews.loadBigCommerceStore),
     re_path(r'^api/bigcommerce/uninstall',
             bigcommerceviews.uninstallBigCommerceStore),
+
+#   UPS APIS
+
     re_path(r'^api/ups/validate$', upsviews.validate),
     re_path(r'^api/ups/getToken$', upsviews.getToken),
     re_path(r'^api/ups/refreshToken$', upsviews.refreshToken),
@@ -91,6 +94,8 @@ urlpatterns = [
             upsviews.getAddress),
     re_path(r'^api/ups/addressValidation$',
             upsviews.addressValidation),
+
+
     re_path(r'^api/shopify/customers/data_request$',
             shopifyviews.data_request_webhook),
     re_path(r'^api/shopify/customers/redact$',
