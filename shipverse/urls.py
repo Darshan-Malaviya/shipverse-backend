@@ -4,13 +4,16 @@ from . import views
 from . import bigcommerceviews
 from . import upsviews
 from . import shopifyviews
+from . import canadapost_views
 
 urlpatterns = [
     re_path(r'^api/users/signin$', views.user_signin),
     re_path(r'^api/users/signup$', views.user_create),
     re_path(r'^api/users/update$', views.user_update),
+    
     path('api/users/verify/<str:token>/', views.verifyEmail),
     path('api/users/forgotpassword/<str:email>/', views.forgotPassword),
+    path('api/users/existforegettoken/<str:token>/',views.existforgettoken),
     re_path(r'^api/users/is_jwt_expired$', views.is_jwt_expired),
     re_path(r'^api/users/getchildaccounts$', views.getchildaccounts),
     path('api/users/resetpassword', views.resetPassword),
@@ -50,6 +53,9 @@ urlpatterns = [
             bigcommerceviews.loadBigCommerceStore),
     re_path(r'^api/bigcommerce/uninstall',
             bigcommerceviews.uninstallBigCommerceStore),
+
+#   UPS APIS
+
     re_path(r'^api/ups/validate$', upsviews.validate),
     re_path(r'^api/ups/getToken$', upsviews.getToken),
     re_path(r'^api/ups/refreshToken$', upsviews.refreshToken),
@@ -88,6 +94,8 @@ urlpatterns = [
             upsviews.getAddress),
     re_path(r'^api/ups/addressValidation$',
             upsviews.addressValidation),
+
+
     re_path(r'^api/shopify/customers/data_request$',
             shopifyviews.data_request_webhook),
     re_path(r'^api/shopify/customers/redact$',
@@ -97,7 +105,7 @@ urlpatterns = [
     #             upsviews.labelRecovery),
     
     re_path(r'^application/settings/CheckReturnOnBoard$', views.CheckReturnOnBoardView.as_view()),
-    re_path(r'^api/carrier/addCarrier', views.UPS_users_account_details.as_view()),
-    re_path(r'^api/carrier/verifyCP', views.verify_canadapost_registration)
+    re_path(r'^api/carrier/addCarrier', canadapost_views.canada_users_account_details.as_view()),
+    re_path(r'^api/carrier/verifyCP', canadapost_views.VerifyCanadaPost.as_view())
     
 ]

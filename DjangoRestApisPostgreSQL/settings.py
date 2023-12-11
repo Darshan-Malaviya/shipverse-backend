@@ -11,9 +11,15 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import environ
-env = environ.Env()
-environ.Env.read_env()
+# import environ
+# env = environ.Env()
+# environ.Env.read_env()
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -90,11 +96,11 @@ if Environment:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env('DB_NAME'),
-            'USER': env('DEBUG_DB_USER'),
-            'PASSWORD': env('DEBUG_DB_PASSWORD'),
-            'HOST': env('DB_HOST_DEBUG'),
-            'PORT': env('DB_PORT'),
+            'NAME': os.environ.get("DB_NAME"),
+            'USER': os.environ.get("DB_USER"),
+            'PASSWORD': os.environ.get("DB_PASSWORD"),
+            'HOST': os.environ.get("DB_HOST"),
+            'PORT': os.environ.get("DB_PORT"),
         }
     }
     FRONTEND_URL = 'http://localhost:3000'
@@ -121,30 +127,15 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env('DB_NAME'),
-            'USER': env('PRODUCTION_DB_USER'),
-            'PASSWORD': env('PRODUCTION_DB_PASSWORD'),
-            'HOST': env('DB_HOST'),
-            'PORT': env('DB_PORT'),
+            'NAME': os.environ.get("DB_NAME"),
+            'USER': os.environ.get("DB_USER"),
+            'PASSWORD': os.environ.get("DB_PASSWORD"),
+            'HOST': os.environ.get("DB_HOST"),
+            'PORT': os.environ.get("DB_PORT"),
         }
     }
     FRONTEND_URL = 'https://app.goshipverse.com'
     BACKEND_URL = 'https://app.goshipverse.com'
-    BC_CLIENT_ID = env('bc_client_id')
-    BC_CLIENT_SECRET = env('bc_client_secret')
-    BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
-    BC_REDIRECT_URI = env('bc_redirect_uri')
-
-    UPS_CLIENT_ID = env('ups_client_id')
-    UPS_CLIENT_SECRET = env('ups_client_secret')
-    SHOPIFY_CLIENT_ID = env('shopify_client_id')
-    SHOPIFY_CLIENT_SECRET = env('shopify_client_secret')
-    SHOPIFY_REDIRECT_URL = env('shopify_redirect_url')
-    UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint')
-    STRIPE_API_KEY = env('stripe_api_key')
-    STRIPE_PRICE_ID = env('stripe_price_id')
-    WEBHOOK_SECRET = env('webhook_secret')
-    
     CANADAPOST_USERNAME = env('canadapost_username_debug')
     CANADAPOST_PASSWORD = env('canadapost_password_debug')
 # Password validation
@@ -243,3 +234,10 @@ CRONJOBS = [
 #         },
 #     },
 # }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "pythonandreactjsdeveloper@gmail.com"
+EMAIL_HOST_PASSWORD = "gfcl aetz tlnp yssl"

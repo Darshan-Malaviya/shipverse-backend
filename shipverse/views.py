@@ -2,10 +2,10 @@ from __future__ import print_function
 import base64
 
 from django.http.response import JsonResponse
+import os
 import requests
 import xmltodict
 from .models import UserCarrier
-from .decorators import log_api_activity
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,18 +13,15 @@ from shipverse.models import Users, VerificationTokens, ResetPasswordTokens, Inv
 from rest_framework.decorators import api_view
 import re
 import json
-from django.core.mail import send_mail
 from DjangoRestApisPostgreSQL import settings
 from django.conf import settings
 from shipverse.auth import create_access_token, create_refresh_token,  is_expired, getUserIdByToken
-from datetime import timedelta
 import datetime
 from rest_framework.exceptions import APIException
 import stripe
 import json
-import logging
-from smtplib import SMTPException
 from .utils import CheckReturnOnBoard
+from .common import send_email, createEmailToken, sendInviteMail, sendVerificationEmail, inviteMailToken, createForgotPasswordToken, sendForgotPasswordEmail, add_carrier_user
 # check authorized
 
 
@@ -42,159 +39,58 @@ def is_jwt_expired(request):
 
 
 @api_view(['POST'])
-@log_api_activity
 def user_create(request):
     try:
-        user = Users.objects.get(
+        user1 = Users.objects.filter(
+            username=request.data['username']).exists()
+        user2 = Users.objects.filter(
+            email=request.data['email']
+        ).exists()
+        
+        if user1:
+            return JsonResponse(
+                {'result': "username already taken!", 'token': '', 'refreshtoken': ''}, status=status.HTTP_401_UNAUTHORIZED)
+        elif user2:
+            return JsonResponse(
+                {'result': "email address already taken!", 'token': '', 'refreshtoken': ''}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            user = Users(
             username=request.data['username'], email=request.data['email'])
-        return JsonResponse(
-            {'result': "username and email address already taken!", 'token': '', 'refreshtoken': ''}, status=status.HTTP_401_UNAUTHORIZED)
+            user.set_password(request.data['password'])
+            user.username = request.data['username']
+            user.email = request.data['email']
+            user.fullName = request.data['fullName']
+            user.phone = request.data['phone']
+            user.usertype = request.data['usertype']
+            user.parentuser = request.data['parentuser']
+            user.roles = request.data['roles']
+            user.active = request.data['active']
+            user.save()
+            # createFreeCheckoutSession(user.id)
+            # access_token = create_access_token(user.id, user.username, user.email)
+            # refresh_token = create_refresh_token(user.id, user.username, user.email)
+            # create email verification token
+            if user.parentuser == '0':
+                try:
+                    user.isEmailVerified = False
+                    user.save()
+                    result = createEmailToken(request.data['email'])
+                    if result == True:
+                        return JsonResponse({'result': 'Verification email sent successfully'}, status=status.HTTP_200_OK)
+                except APIException as e:
+                    return JsonResponse({'result': str(e.detail)}, status=e.status_code)
+            else:
+                try:
+                    result = inviteMailToken(user.username, request.data['email'])
+                    if result == True:
+                        return JsonResponse({'result': 'Create password email sent successfully'}, status=status.HTTP_200_OK)
+                except APIException as e:
+                    return JsonResponse({'result': str(e.detail)}, status=e.status_code)
+        return JsonResponse({"result":"Unknown Error"},status=status.HTTP_200_OK)
     except Users.DoesNotExist:
-        user = Users(
-            username=request.data['username'], email=request.data['email'])
-        user.set_password(request.data['password'])
-        user.username = request.data['username']
-        user.email = request.data['email']
-        user.fullName = request.data['fullName']
-        user.phone = request.data['phone']
-        user.usertype = request.data['usertype']
-        user.parentuser = request.data['parentuser']
-        user.roles = request.data['roles']
-        user.active = request.data['active']
-        user.save()
-        # createFreeCheckoutSession(user.id)
-        # access_token = create_access_token(user.id, user.username, user.email)
-        # refresh_token = create_refresh_token(user.id, user.username, user.email)
-        # create email verification token
-        if user.parentuser == '0':
-            try:
-                user.isEmailVerified = False
-                user.save()
-                result = createEmailToken(request.data['email'])
-                if result == True:
-                    return JsonResponse({'result': 'Verification email sent successfully'}, status=status.HTTP_200_OK)
-            except APIException as e:
-                return JsonResponse({'result': str(e.detail)}, status=e.status_code)
-        else:
-            try:
-                result = inviteMailToken(user.username, request.data['email'])
-                if result == True:
-                    return JsonResponse({'result': 'Create password email sent successfully'}, status=status.HTTP_200_OK)
-            except APIException as e:
-                return JsonResponse({'result': str(e.detail)}, status=e.status_code)
+        return JsonResponse({"result":"Unknown Error"},status=status.HTTP_200_OK)
 
-@log_api_activity
-def inviteMailToken(username, email):
-    try:
-        row = InviteTokens.objects.get(username=username, email=email)
-        current_timestamp = datetime.datetime.now().timestamp()
-        difference = current_timestamp - row.emailVerificationDate.timestamp()
-        if (difference / 60000) < 1:
-            raise APIException(
-                detail='Invite email sent recently', code='500')
-        else:
-            current_timestamp = str(int(datetime.datetime.now().timestamp()))
-            current_date = datetime.datetime.now().date()
-            row.emailInviteToken = current_timestamp
-            row.emailInviteDate = current_date
-            row.save()
-            sent = sendInviteMail(username, email, current_timestamp)
-            if sent == 1:
-                return True
-            else:
-                raise APIException(detail='Internal Server Error', code='500')
 
-    except InviteTokens.DoesNotExist:
-        current_timestamp = str(int(datetime.datetime.now().timestamp()))
-        current_date = datetime.datetime.now().date()
-        token = InviteTokens(
-            username=username,
-            email=email,
-            emailInviteToken=current_timestamp,
-            emailInviteDate=current_date
-        )
-        token.save()
-        sent = sendInviteMail(username, email, current_timestamp)
-        if sent == 1:
-            return True
-        else:
-            raise APIException(detail='Internal Server Error', code='500')
-
-@log_api_activity
-def createEmailToken(email):
-    try:
-        row = VerificationTokens.objects.get(email=email)
-        current_timestamp = datetime.datetime.now().timestamp()
-        difference = current_timestamp - row.emailVerificationDate.timestamp()
-        if (difference / 60000) < 1:
-            raise APIException(
-                detail='Verification email sent recently', code='500')
-        else:
-            current_timestamp = str(int(datetime.datetime.now().timestamp()))
-            current_date = datetime.datetime.now().date()
-            row.emailVerificationToken = current_timestamp
-            row.emailVerificationDate = current_date
-            row.save()
-            sent = sendVerificationEmail(email, current_timestamp)
-            if sent == 1:
-                return True
-            else:
-                raise APIException(detail='Internal Server Error', code='500')
-
-    except VerificationTokens.DoesNotExist:
-        current_timestamp = str(int(datetime.datetime.now().timestamp()))
-        current_date = datetime.datetime.now().date()
-        token = VerificationTokens(
-            email=email,
-            emailVerificationToken=current_timestamp,
-            emailVerificationDate=current_date
-        )
-        token.save()
-        sent = sendVerificationEmail(email, current_timestamp)
-        if sent == 1:
-            return True
-        else:
-            raise APIException(detail='Internal Server Error', code='500')
-
-@log_api_activity
-def sendInviteMail(username, email, token):
-
-    html_ = 'Hi! <br><br> A user account has been created for you at www.app.goshipverse.com.<br>Username:'+username+'<br>Next, create a password at this ' + '<a href="' + \
-        settings.FRONTEND_URL + '/setupPassword/' + token + \
-            '">link</a>'
-    try:
-        sent = send_mail(
-            'Verify Email',
-            '',
-            'info@goshipverse.com',
-            [email],
-            html_message=html_,
-            fail_silently=False,
-        )
-        return sent
-    except:
-        return ""
-
-@log_api_activity
-def sendVerificationEmail(email, token):
-
-    html_ = 'Hi! <br><br> Thanks for your registration<br><br>' + '<a href="' + \
-        settings.FRONTEND_URL + '/verify/' + token + \
-            '">Click here to activate your account</a>'
-    try:
-        sent = send_mail(
-            'Verify Email',
-            '',
-            'info@goshipverse.com',
-            [email],
-            html_message=html_,
-            fail_silently=False,
-        )
-        return sent
-    except:
-        return ""
-
-@log_api_activity
 @api_view(['GET'])
 def verifyEmail(request, token):
     try:
@@ -210,7 +106,7 @@ def verifyEmail(request, token):
     except VerificationTokens.DoesNotExist:
         return JsonResponse({'result': 'This link is expired'}, status=status.HTTP_403_FORBIDDEN)
 
-@log_api_activity
+
 @api_view(['POST'])
 def user_update(request):
     try:
@@ -228,13 +124,12 @@ def user_update(request):
         return JsonResponse(
             {'result': "Success!"}, status=status.HTTP_200_OK)
     except Users.DoesNotExist:
-
         return JsonResponse(
             {'result': 'Failed'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # signin
 
-@log_api_activity
+
 @api_view(['POST'])
 def user_signin(request):
     email = request.data['email']
@@ -292,14 +187,13 @@ def user_signin(request):
 # childuser
 
 class CheckReturnOnBoardView(APIView):
-    @log_api_activity
+    
     def get(self,requests,formate=None) :
-        print('hello world')
         user = Users.objects.all().first()
         
         return Response({"stay_CheckReturnOnBoard" : CheckReturnOnBoard(user.id)},status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getchildaccounts(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -314,7 +208,6 @@ def getchildaccounts(request):
     account_data = []
     childUsers = Users.objects.filter(parentuser=user_id, active=True)
     count = count * 5
-    print(count)
     for childUser in childUsers:
         if count > 0:
             count = count - 1
@@ -341,7 +234,7 @@ def getchildaccounts(request):
     json_data = json.dumps(account_data)
     return JsonResponse(json_data, safe=False)
 
-@log_api_activity
+
 @api_view(['GET'])
 def forgotPassword(request, email):
     try:
@@ -355,76 +248,27 @@ def forgotPassword(request, email):
     except Users.DoesNotExist:
         return JsonResponse({'result': "Invalid Email Address"}, status=404)
 
-@log_api_activity
-def createForgotPasswordToken(email):
+@api_view(["GET"])
+def existforgettoken(request, token):
     try:
-        token = ResetPasswordTokens.objects.get(email=email)
-        current_timestamp = datetime.datetime.now().timestamp()
-        difference = current_timestamp - token.newPasswordDate.timestamp()
-        if (difference / 60000) < 2:
-            raise APIException(
-                detail='Reset password email sent recently', code=500)
+        if ResetPasswordTokens.objects.filter(newPasswordToken=token).exists():
+            return JsonResponse({"exist":True})
         else:
-            current_timestamp = str(int(datetime.datetime.now().timestamp()))
-            current_date = datetime.datetime.now().date()
-            token.newPasswordToken = current_timestamp
-            token.newPasswordDate = current_date
-            token.save()
-            sent = sendForgotPasswordEmail(email, current_timestamp)
-            if sent == 1:
-                return True
-            else:
-                raise APIException(detail='Internal Server Error', code=500)
+            return JsonResponse({"exist":False})
+    except:
+        return JsonResponse({"exist":False})
 
-    except ResetPasswordTokens.DoesNotExist:
-        current_timestamp = str(int(datetime.datetime.now().timestamp()))
-        current_date = datetime.datetime.now().date()
-        token = ResetPasswordTokens(
-            email=email,
-            newPasswordToken=current_timestamp,
-            newPasswordDate=current_date
-        )
-        token.save()
-        sent = sendForgotPasswordEmail(email, current_timestamp)
-        if sent == 1:
-            return True
-        else:
-            raise APIException(detail='Internal Server Error', code='500')
-
-@log_api_activity
-def sendForgotPasswordEmail(email, token):
-
-    html_ = 'Hi! <br><br> If you requested to reset your password<br><br>' + '<a href="' + \
-        settings.FRONTEND_URL + '/auth/resetpassword/' + token + \
-            '">Click here</a>'
-
-    try:
-        sent = send_mail(
-            'Forgot Password',
-            '',
-            'info@goshipverse.com',
-            [email],
-            html_message=html_,
-            fail_silently=False,
-        )
-    except Exception as e:
-        raise APIException(
-            detail='Reset password email has not been sent', code='500')
-
-    return sent
-
-@log_api_activity
 @api_view(['POST'])
 def resetPassword(request):
-
     token = request.data['token']
     row = ResetPasswordTokens.objects.get(newPasswordToken=token)
     user = Users.objects.get(email=row.email)
-    user.password = request.data['password']
+    user.set_password(request.data['password'])
     user.save()
+    row.delete()
     return JsonResponse({'result': "Password has been reset successfully"}, status=status.HTTP_200_OK)
 
-@log_api_activity
+
 @api_view(['POST'])
 def createCheckoutSession(request):
 
@@ -477,7 +321,6 @@ def createCheckoutSession(request):
             print({'result': str(e)})
             return JsonResponse({'result': str(e)}, status=500)
     else:
-        print("------------------------")
         subscriptions = stripe.Subscription.list(customer=subuser.customer_id)
         try:
             items = subscriptions['data'][0]['items']['data']
@@ -494,7 +337,7 @@ def createCheckoutSession(request):
             print({'result': e})
             return JsonResponse({'result': "failed"}, status=500)
 
-@log_api_activity
+
 @api_view(['POST'])
 def webhook_received(request):
     stripe.api_key = settings.STRIPE_API_KEY
@@ -662,7 +505,7 @@ def webhook_received(request):
 
     return JsonResponse({'status': 'success'})
 
-@log_api_activity
+
 @api_view(['POST'])
 def cancel_subscription(request):
 
@@ -678,7 +521,7 @@ def cancel_subscription(request):
         subuser.subscription_id, cancel_at_period_end=isCancel,)
     return JsonResponse({'result': 'success', 'count': 0}, status=200)
 
-@log_api_activity
+
 @api_view(['POST'])
 def getSubscriptions(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -715,7 +558,6 @@ def getSubscriptions(request):
     # Return the JSON response with a 200 status code
     return JsonResponse(response_data, status=200)
 
-@log_api_activity
 @api_view(['POST'])
 def resetInvitePassword(request):
 
@@ -843,4 +685,3 @@ def verify_canadapost_registration(request):
             "data":None
         }
     return Response(response,status=status.HTTP_200_OK)
-
