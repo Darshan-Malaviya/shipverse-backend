@@ -183,7 +183,7 @@ class UserCarrier(models.Model):
     fullName = models.CharField(max_length=250)
     company_name = models.CharField(max_length=250)
     email = models.EmailField()
-    phone = models.BigIntegerField()
+    phone = models.CharField()
     street1 = models.CharField(max_length=250)
     street2 = models.CharField(max_length=250,blank=True,null=True)
     city = models.CharField(max_length=250)

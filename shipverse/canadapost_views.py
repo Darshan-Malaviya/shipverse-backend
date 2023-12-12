@@ -28,7 +28,7 @@ class canada_users_account_details(APIView):
         
         if(request.data['carrier']):
             # url = "https://soa-gw.canadapost.ca/ot/token"
-            url = "https://" + os.environ.get("canadapost_dev") + "/ot/token"
+            url = "https://ct.soa-gw.canadapost.ca/ot/token"
             cred = base64.b64encode(str(os.environ.get("canadapost_username_debug") + ":" + os.environ.get("canadapost_password_debug")).encode("ascii"))
             result = requests.post(url=url,data=None,headers={
                 "Accept":"application/vnd.cpc.registration-v2+xml",
@@ -45,8 +45,8 @@ class canada_users_account_details(APIView):
                     "isSuccess":True,
                     "message":None,
                     "data":{
-                        # "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/cpVerify"
-                         "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://0df8-2409-4080-9d00-645c-b733-bdba-28f7-a89e.ngrok-free.app/api/carrier/verifyCP"
+                        "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/cpVerify"
+                        #  "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://0df8-2409-4080-9d00-645c-b733-bdba-28f7-a89e.ngrok-free.app/verifyCP"
                     }
                 }
             else:
@@ -72,7 +72,7 @@ class VerifyCanadaPost(APIView):
         user = Users.objects.get(id=user_id)
         if not user : 
             return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)    
-        url = "https://" + os.environ.get("canadapost_dev") + "/ot/token/"+token_id
+        url = "https://ct.soa-gw.canadapost.ca/ot/token/"+token_id
         # url = "https://soa-gw.canadapost.ca/ot/token/"+token_id
         cred = base64.b64encode(str(os.environ.get("canadapost_username_debug") + ":" + os.environ.get("canadapost_password_debug")).encode("ascii"))
         result = requests.get(url=url,headers={

@@ -223,14 +223,14 @@ def add_carrier_user(user, data):
         fullName = data['fullname'],
         company_name = data['company_name'],
         email = data['email'],
-        phone = int(data['phone']),
+        phone = data['phone'],
         street1 = data['street1'],
         street2 = data['street2'],
         city = data['city'],
         state = data['state'],
-        zip_code = int(data['zip_code']),
+        zip_code = data['zip_code'],
         account_nickname = data['account_nickname'],
         account_number = data['account_number'],
         country = data["country"],
-        postcode = int(data['postcode'])
+        postcode = data['postcode']
     )
