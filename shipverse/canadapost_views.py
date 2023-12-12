@@ -9,6 +9,7 @@ import xmltodict
 from .common import add_carrier_user
 import os
 import json
+from .serializers import UserCarrierSerializer
 
 class canada_users_account_details(APIView):
 
@@ -19,6 +20,11 @@ class canada_users_account_details(APIView):
         user = Users.objects.get(id=user_id)
         if not user :
             return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
+        
+        serializer = UserCarrierSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors)
         
         if(request.data['carrier']):
             # url = "https://soa-gw.canadapost.ca/ot/token"

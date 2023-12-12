@@ -189,11 +189,11 @@ class UserCarrier(models.Model):
     city = models.CharField(max_length=250)
     state  = models.CharField(max_length=250)
     country1 = models.CharField(max_length=250)
-    zip_code = models.IntegerField()
+    zip_code = models.CharField()
     account_number = models.CharField(max_length=250)
     account_nickname = models.CharField(max_length=250,blank=True,null=True)
     country = models.CharField(max_length=20)
-    postcode = models.IntegerField()
+    postcode = models.CharField()
 
 
 class CandapostUserDetails(models.Model):

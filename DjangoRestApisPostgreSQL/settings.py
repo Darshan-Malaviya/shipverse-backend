@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'DjangoRestApisPostgreSQL.wsgi.application'
 ALLOWED_HOSTS = ["170.187.179.126", "www.app.goshipverse.com", "app.goshipverse.com",
                  "https://app.goshipverse.com", "localhost", "https://www.app.goshipverse.com", "127.0.0.1", ".ngrok-free.app", "*"]
 DEBUG = True
-Environment = False
+Environment = True
 if Environment:
     # Development database settings
     DATABASES = {
@@ -105,23 +105,23 @@ if Environment:
     }
     FRONTEND_URL = 'http://localhost:3000'
     BACKEND_URL = 'http://localhost:8080'
-    BC_CLIENT_ID = env('bc_client_id_debug')
-    BC_CLIENT_SECRET = env('bc_client_secret_debug')
-    BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
-    BC_REDIRECT_URI = env('bc_redirect_uri_debug')
+    # BC_CLIENT_ID = env('bc_client_id_debug')
+    # BC_CLIENT_SECRET = env('bc_client_secret_debug')
+    # BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
+    # BC_REDIRECT_URI = env('bc_redirect_uri_debug')
 
-    UPS_CLIENT_ID = env('ups_client_id_debug')
-    UPS_CLIENT_SECRET = env('ups_client_secret_debug')
-    SHOPIFY_CLIENT_ID = env('shopify_client_id_debug')
-    SHOPIFY_CLIENT_SECRET = env('shopify_client_secret_debug')
-    SHOPIFY_REDIRECT_URL = env('shopify_redirect_url_debug')
-    UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint_debug')
-    STRIPE_API_KEY = env('stripe_api_key_debug')
-    STRIPE_PRICE_ID = env('stripe_price_id_debug')
-    WEBHOOK_SECRET = env('webhook_secret_debug')
+    # UPS_CLIENT_ID = env('ups_client_id_debug')
+    # UPS_CLIENT_SECRET = env('ups_client_secret_debug')
+    # SHOPIFY_CLIENT_ID = env('shopify_client_id_debug')
+    # SHOPIFY_CLIENT_SECRET = env('shopify_client_secret_debug')
+    # SHOPIFY_REDIRECT_URL = env('shopify_redirect_url_debug')
+    # UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint_debug')
+    # STRIPE_API_KEY = env('stripe_api_key_debug')
+    # STRIPE_PRICE_ID = env('stripe_price_id_debug')
+    # WEBHOOK_SECRET = env('webhook_secret_debug')
 
-    CANADAPOST_USERNAME = env('canadapost_username_debug')
-    CANADAPOST_PASSWORD = env('canadapost_password_debug')
+    CANADAPOST_USERNAME = os.environ.get('canadapost_username_debug')
+    CANADAPOST_PASSWORD = os.environ.get('canadapost_passoword_debug')
 else:
     # Production database settings
     DATABASES = {
@@ -136,8 +136,23 @@ else:
     }
     FRONTEND_URL = 'https://app.goshipverse.com'
     BACKEND_URL = 'https://app.goshipverse.com'
-    CANADAPOST_USERNAME = env('canadapost_username_debug')
-    CANADAPOST_PASSWORD = env('canadapost_password_debug')
+#     BC_CLIENT_ID = env('bc_client_id')
+#     BC_CLIENT_SECRET = env('bc_client_secret')
+#     BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
+#     BC_REDIRECT_URI = env('bc_redirect_uri')
+
+#     UPS_CLIENT_ID = env('ups_client_id')
+#     UPS_CLIENT_SECRET = env('ups_client_secret')
+#     SHOPIFY_CLIENT_ID = env('shopify_client_id')
+#     SHOPIFY_CLIENT_SECRET = env('shopify_client_secret')
+#     SHOPIFY_REDIRECT_URL = env('shopify_redirect_url')
+#     UPS_REFRESHTOKEN_ENDPOINT = env('ups_refreshtoken_endpoint')
+#     STRIPE_API_KEY = env('stripe_api_key')
+#     STRIPE_PRICE_ID = env('stripe_price_id')
+#     WEBHOOK_SECRET = env('webhook_secret')
+    
+    CANADAPOST_USERNAME = os.environ.get('canadapost_username_debug')
+    CANADAPOST_PASSWORD = os.environ.get('canadapost_passoword_debug')
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
