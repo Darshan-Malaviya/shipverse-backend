@@ -74,3 +74,8 @@ class UserCarrierSerializer(serializers.Serializer):
     account_nickname = serializers.CharField(required = True)
     country = serializers.CharField(required = True)
     postcode = serializers.CharField(required = True)
+
+
+class CanadaPostPriceSerializer(serializers.Serializer):
+    origin_postal_code = serializers.CharField(required = True)
+    postal_code = serializers.CharField(required = True)

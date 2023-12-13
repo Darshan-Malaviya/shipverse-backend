@@ -211,7 +211,7 @@ def getUsers(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION')
     user_id = getUserIdByToken(auth_header)
     user = Users.objects.get(id=user_id)
-    if not user : 
+    if not user :
         return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
     registeredCarriers = UserCarrier.objects.filter(user=user)
     serialized = UPSSerializer(registeredCarriers,many=True)
