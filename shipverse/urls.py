@@ -106,6 +106,6 @@ urlpatterns = [
     
     re_path(r'^application/settings/CheckReturnOnBoard$', views.CheckReturnOnBoardView.as_view()),
     re_path(r'^api/carrier/addCarrier', canadapost_views.canada_users_account_details.as_view()),
-    re_path(r'^api/carrier/verifyCP', canadapost_views.VerifyCanadaPost.as_view())
-    
+    re_path(r'^api/carrier/verifyCP', canadapost_views.VerifyCanadaPost.as_view()),
+    re_path(r'^api/carrier/get_canada_post_price', canadapost_views.CanadaPostPrice.as_view())
 ]
