@@ -9,7 +9,7 @@ import xmltodict
 from .common import add_carrier_user
 import os
 import json
-from .serializers import UserCarrierSerializer, CanadaPostPriceSerializer
+from .serializers import UserCarrierSerializer, CanadaPostPriceSerializer, UserCarrier
 
 class canada_users_account_details(APIView):
 
@@ -37,16 +37,17 @@ class canada_users_account_details(APIView):
                 "Accept-language":"en-CA"
             })
             json_decoded = xmltodict.parse(result.content)
+            token_id = json_decoded["token"]["token-id"]
             # redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/merchant"
             redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
             if(result.status_code == 200):
-                user_carrier = add_carrier_user(user, request.data)
+                user_carrier = add_carrier_user(user, request.data, token_id=token_id)
                 response = {
                     "isSuccess":True,
                     "message":None,
                     "data":{
-                        "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/cpVerify"
-                        #  "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://0df8-2409-4080-9d00-645c-b733-bdba-28f7-a89e.ngrok-free.app/verifyCP"
+                        # "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://dev1.goshipverse.com/cpVerify"
+                         "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://d2cd-2405-201-2017-30e4-e77a-6f83-e507-d794.ngrok-free.app/verifyCP"
                     }
                 }
             else:
@@ -64,10 +65,11 @@ class canada_users_account_details(APIView):
 class VerifyCanadaPost(APIView):
     def post(self, request):
         token_id = request.data["tokenId"]
+        print("token id ", token_id)
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         user_id = getUserIdByToken(auth_header)
         user = Users.objects.get(id=user_id)
-        if not user : 
+        if not user: 
             return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)    
         url = "https://ct.soa-gw.canadapost.ca/ot/token/"+token_id
         # url = "https://soa-gw.canadapost.ca/ot/token/"+token_id
@@ -92,15 +94,19 @@ class VerifyCanadaPost(APIView):
         is_credit_card = json_decoded.get("merchant-info").get("has-default-credit-card")
 
         if(result.status_code == 200):
+
+            user_carrier = UserCarrier.objects.filter(token_id = token_id)[0]
+            
             candapost_obj = CandapostUserDetails(
-                            user = user,
                             customer_number = customer_number,
                             contract_number = contract_number,
                             merchant_username = merchant_username,
                             merchant_password = merchant_password,
-                            has_credit_card = is_credit_card)
+                            has_credit_card = is_credit_card,
+                            usercarrier_id = user_carrier.id)
 
             candapost_obj.save()
+            print(candapost_obj)
 
             response = {
                 "isSuccess":True,
@@ -120,9 +126,9 @@ class VerifyCanadaPost(APIView):
 class CanadaPostPrice(APIView):
 
     def post(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
-        user_id = getUserIdByToken(auth_header)
-        user = Users.objects.get(id=user_id)
+        # auth_header = request.META.get('HTTP_AUTHORIZATION')
+        # user_id = getUserIdByToken(auth_header)
+        # user = Users.objects.get(id=user_id)
 
         serializers = CanadaPostPriceSerializer(data=request.data)
         if not serializers.is_valid():
@@ -130,8 +136,9 @@ class CanadaPostPrice(APIView):
         
         origin_postal_code = request.data.get("origin_postal_code")
         postal_code = request.data.get("postal_code")
-        if not user : 
-            return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)    
+        weight = request.data.get("weight")
+        # if not user : 
+        #     return Response({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)    
         
         url = "https://ct.soa-gw.canadapost.ca/rs/ship/price"
         cred = base64.b64encode(str(os.environ.get("canadapost_username_debug") + ":" + os.environ.get("canadapost_password_debug")).encode("ascii"))
@@ -146,7 +153,7 @@ class CanadaPostPrice(APIView):
             <mailing-scenario xmlns="http://www.canadapost.ca/ws/ship/rate-v4">
             <customer-number>0006006116</customer-number>
             <parcel-characteristics>
-            <weight>1</weight>
+            <weight>{}</weight>
             </parcel-characteristics>
             <origin-postal-code>{}</origin-postal-code>
             <destination>
@@ -155,13 +162,22 @@ class CanadaPostPrice(APIView):
             </domestic>
             </destination>
             </mailing-scenario>
-            """.format(origin_postal_code, postal_code)
+            """.format(weight,origin_postal_code, postal_code)
         
         response = requests.post(url=url,
                                 data=xml_content,
                                 headers=headers)
         
         json_decoded = xmltodict.parse(response.content)
-        price = json_decoded["price-quotes"]["price-quote"][0]["price-details"]["base"]
-
-        return Response(data={"price": price}, status=status.HTTP_200_OK)
+        service1 = json_decoded["price-quotes"]["price-quote"][0]
+        service2 = json_decoded["price-quotes"]["price-quote"][1]
+        service3 = json_decoded["price-quotes"]["price-quote"][2]
+        service4 = json_decoded["price-quotes"]["price-quote"][3]
+        response = {
+            service1["service-name"]: service1["price-details"]["base"],
+            service2["service-name"]: service2["price-details"]["base"],
+            service3["service-name"]: service3["price-details"]["base"],
+            service4["service-name"]: service4["price-details"]["base"]
+        }
+        
+        return Response(data=response, status=status.HTTP_200_OK)

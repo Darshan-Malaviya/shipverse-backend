@@ -193,7 +193,8 @@ class UserCarrier(models.Model):
     account_number = models.CharField(max_length=250)
     account_nickname = models.CharField(max_length=250,blank=True,null=True)
     country = models.CharField(max_length=20)
-    postcode = models.CharField()
+    postcode = models.CharField(max_length=100)
+    token_id = models.CharField(max_length=250, null=True)
 
 
 class CandapostUserDetails(models.Model):
@@ -202,6 +203,7 @@ class CandapostUserDetails(models.Model):
     merchant_username = models.CharField(max_length=250, null=True)
     merchant_password = models.CharField(max_length=250, null=True)
     has_credit_card = models.CharField(max_length=250, null=True)
+    usercarrier_id = models.CharField(max_length=250, null=True)
 
     def __str__(self) -> str:
         return self.customer_number
