@@ -233,7 +233,7 @@ def removeUser(request):
     shipperno = user_data['shipperno']
     try:
         shipperLocation = UserCarrier.objects.get(
-            user=user, accountNumber=shipperno)
+            user=user, account_number=shipperno)   # Updated accountNumber to account_number
     except:
         return JsonResponse({'success': False}, status=status.HTTP_404_NOT_FOUND)
     shipperLocation.delete()
