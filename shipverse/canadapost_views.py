@@ -1,90 +1,89 @@
-from rest_framework.views import APIView
-from .auth import getUserIdByToken
-from .models import Users, CandapostUserDetails, ShipperLocation, UserCarrier
-from rest_framework.response import Response
-import base64
 import requests
-from rest_framework import status
 import xmltodict
+from rest_framework import status
+from django.http import HttpResponse
+from .auth import getUserIdByToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Users, CandapostUserDetails, UserCarrier
 from .common import add_carrier_user
-import os
-import json
 from .serializers import UserCarrierSerializer, CanadaPostPriceSerializer
-from shipverse import ServiceBase
-import logging
-from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
+import shipverse.constant as const
 
-# from shipverse.util import InfoObject
 
-class canada_users_account_details(APIView):
+class CanadaUsersAccountDetails(APIView):
+    """
+    Step1 -  Create canada post account.
+
+    """
+
     def post(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
-        print(auth_header)
-        user_id = getUserIdByToken(auth_header)
-        user = Users.objects.get(id=user_id)
-        if not user:
-            return Response(
-                {"message": "User not found or Unauthorized !"},
-                status=status.HTTP_200_OK,
-            )
+        if auth_header:
+            user_id = getUserIdByToken(auth_header)
+            user = Users.objects.get(id=user_id)
+            canadaPost_user = CandapostUserDetails.objects.filter(user=user).first()
+            if not user:
+                return Response(
+                    {"message": "User not found or Unauthorized !"},
+                    status=status.HTTP_200_OK,
+                )
+            serializer = UserCarrierSerializer(data=request.data)
 
-        serializer = UserCarrierSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-
-        if request.data["carrier"]:
-            # url = "https://soa-gw.canadapost.ca/ot/token"
-            url = "https://ct.soa-gw.canadapost.ca/ot/token"
-            cred = base64.b64encode(
-                str(
-                    os.environ.get("canadapost_username_debug")
-                    + ":"
-                    + os.environ.get("canadapost_password_debug")
-                ).encode("ascii")
-            )
-            result = requests.post(
-                url=url,
-                data=None,
-                headers={
-                    "Accept": "application/vnd.cpc.registration-v2+xml",
-                    "Content-Type": "application/vnd.cpc.registration-v2+xml",
-                    "Authorization": "Basic " + cred.decode("ascii"),
-                    "Accept-language": "en-CA",
-                },
-            )
-            json_decoded = xmltodict.parse(result.content)
-            token_id = json_decoded["token"]["token-id"]
-            # redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/merchant"
-            redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
-            if result.status_code == 200:
-                user_carrier = add_carrier_user(user, request.data)
-                response = {
-                    "isSuccess": True,
-                    "message": None,
-                    "data": {
-                        "redirectUrl": redirect_url
-                        + "?token-id="
-                        + json_decoded["token"]["token-id"]
-                        + "&platform-id="
-                        + str(user_carrier.id)
-                        + "&return-url=https://dev1.goshipverse.com/cpVerify"
-                        #  "redirectUrl":redirect_url+"?token-id="+json_decoded["token"]["token-id"]+"&platform-id="+str(user_carrier.id)+"&return-url=https://0df8-2409-4080-9d00-645c-b733-bdba-28f7-a89e.ngrok-free.app/verifyCP"
+            if request.data["carrier"]:
+                url = f"https://{const.canadaPost}/ot/token"
+                result = requests.post(
+                    url=url,
+                    data=None,
+                    headers={
+                        "Accept": const.contentTypeRegistrationXml,
+                        "Content-Type": const.contentTypeRegistrationXml,
+                        "Authorization": "Basic " + const.encoded_cred,
+                        "Accept-language": const.acceptLanguage,
                     },
-                }
+                )
+                json_decoded = xmltodict.parse(result.content)
+
+                if result.status_code == 200:
+                    redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
+                    user_carrier = add_carrier_user(user, request.data)
+                    response = {
+                        "isSuccess": True,
+                        "message": None,
+                        "data": {
+                            "redirectUrl": redirect_url
+                            + "?token-id="
+                            + json_decoded.get("token", {}).get("token-id")
+                            + "&platform-id="
+                            + str(const.customerNo)  # TODO add customer number
+                            + f"&return-url={const.cpVerify_link}"
+                        },
+                    }
+                else:
+                    response = {
+                        "isSuccess": False,
+                        "message": json_decoded.get("messages", {}).get("message"),
+                        "data": None,
+                    }
+                return Response(response, status=status.HTTP_200_OK)
             else:
-                response = {
-                    "isSuccess": False,
-                    "message": json_decoded["messages"]["message"],
-                    "data": None,
-                }
-            return Response(response, status=status.HTTP_200_OK)
+                add_carrier_user(user, request.data)
+            return Response({}, status=status.HTTP_200_OK)
         else:
-            add_carrier_user(user, request.data)
-        return Response({}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Unauthorized token"}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class VerifyCanadaPost(APIView):
+    """
+    Step2 - Verify the carrier account
+
+    """
+
     def post(self, request):
         token_id = request.data["tokenId"]
         auth_header = request.META.get("HTTP_AUTHORIZATION")
@@ -96,40 +95,34 @@ class VerifyCanadaPost(APIView):
                 {"message": "User not found or Unauthorized !"},
                 status=status.HTTP_200_OK,
             )
-        url = "https://ct.soa-gw.canadapost.ca/ot/token/" + token_id
-        # url = "https://soa-gw.canadapost.ca/ot/token/"+token_id
-        cred = base64.b64encode(
-            str(
-                os.environ.get("canadapost_username_debug")
-                + ":"
-                + os.environ.get("canadapost_password_debug")
-            ).encode("ascii")
-        )
+
+        url = f"https://{const.canadaPost}/ot/token/" + token_id
+        headers = {
+            "Accept": const.contentTypeRegistrationXml,
+            "Content-Type": const.contentTypeRegistrationXml,
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
+        }
+
         result = requests.get(
             url=url,
-            headers={
-                "Accept": "application/vnd.cpc.registration-v2+xml",
-                "Content-Type": "application/vnd.cpc.registration-v2+xml",
-                "Authorization": "Basic " + cred.decode("ascii"),
-                "Accept-language": "en-CA",
-            },
+            headers=headers,
         )
         json_decoded = xmltodict.parse(result.content)
-        print("json_decoded -----> ",json_decoded)
-
-        print(type(json_decoded))
-
-        # mydict = json.loads(json_decoded)
-
-        customer_number = json_decoded.get("merchant-info").get("customer-number")
-        contract_number = json_decoded.get("merchant-info").get("contract-number")
-        merchant_username = json_decoded.get("merchant-info").get("merchant-username")
-        merchant_password = json_decoded.get("merchant-info").get("merchant-password")
-        is_credit_card = json_decoded.get("merchant-info").get(
-            "has-default-credit-card"
-        )
 
         if result.status_code == 200:
+            customer_number = json_decoded.get("merchant-info").get("customer-number")
+            contract_number = json_decoded.get("merchant-info").get("contract-number")
+            merchant_username = json_decoded.get("merchant-info").get(
+                "merchant-username"
+            )
+            merchant_password = json_decoded.get("merchant-info").get(
+                "merchant-password"
+            )
+            is_credit_card = json_decoded.get("merchant-info").get(
+                "has-default-credit-card"
+            )
+
             candapost_obj = CandapostUserDetails(
                 user=user,
                 customer_number=customer_number,
@@ -138,7 +131,6 @@ class VerifyCanadaPost(APIView):
                 merchant_password=merchant_password,
                 has_credit_card=is_credit_card,
             )
-
             candapost_obj.save()
             print(candapost_obj)
 
@@ -155,9 +147,14 @@ class VerifyCanadaPost(APIView):
                 "data": None,
             }
         return Response(response, status=status.HTTP_200_OK)
-    
+
 
 class ShipmentCreateAPI(APIView):
+    """
+    Create shipment in canada post
+
+    """
+
     def post(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         user_id = getUserIdByToken(auth_header)
@@ -168,16 +165,16 @@ class ShipmentCreateAPI(APIView):
                 {"message": "User not found or Unauthorized !"},
                 status=status.HTTP_200_OK,
             )
-    
+
         user_carrier = UserCarrier.objects.filter(user_id=user_id).first()
 
         data = request.data
 
         customer_no = user_canadapost.customer_number
         group_id = data.get("group_id")
-        shipping_request_point = data.get("shipmentData",{}).get("zip")
-        service_code = data.get("service_code") or "DOM.RP"   # Valid code representing the Canada Post delivery service used for shipping the item("Regular Parcel", "Xpresspost").
-        
+        shipping_request_point = data.get("shipmentData", {}).get("zip")
+        service_code = data.get("service_code") or "DOM.RP"
+
         # Sender's Info
         sender_name = user.username
         sender_company = user_carrier.company_name
@@ -187,7 +184,6 @@ class ShipmentCreateAPI(APIView):
         sender_state = user_carrier.state
         sender_country_code = user_carrier.country
         sender_postal_zip_code = user_carrier.postcode
-
 
         # Receiver's Info
         receiver_name = data.get("shipmentData", {}).get("recipient")
@@ -208,12 +204,15 @@ class ShipmentCreateAPI(APIView):
         notification_email = user.email
 
         contract_id = user_canadapost.contract_number
-        intended_method_of_payment = data.get("shipmentData",{}).get("paymentInformation",{}).get("paymentMethod")
+        intended_method_of_payment = (
+            data.get("shipmentData", {})
+            .get("paymentInformation", {})
+            .get("paymentMethod")
+        )
 
+        url = f"https://{const.canadaPost}/rs/{customer_no}/{customer_no}/shipment"
 
-        url = f"https://ct.soa-gw.canadapost.ca/rs/{customer_no}/{customer_no}/shipment"
-
-        payload = f"""<shipment xmlns="http://www.canadapost.ca/ws/shipment-v8">
+        payload = f"""<shipment xmlns={const.xmlns}>
                             <group-id>{group_id}</group-id>
                             <requested-shipping-point>{shipping_request_point}</requested-shipping-point>
                             <delivery-spec>
@@ -270,47 +269,44 @@ class ShipmentCreateAPI(APIView):
                                 </settlement-info>
                             </delivery-spec>
                         </shipment>"""
-        
-        cred = base64.b64encode(
-            str(
-                os.environ.get("canadapost_username_debug")
-                + ":"
-                + os.environ.get("canadapost_password_debug")
-            ).encode("ascii")
-        )
 
         headers = {
-            "Accept": "application/vnd.cpc.ship.rate-v4+xml",
-            "Content-Type": "application/vnd.cpc.ship.rate-v4+xml",
-            "Authorization": "Basic " + cred.decode("ascii"),
-            "Accept-language": "en-CA",
+            "Accept": const.contentTypeShipRateXml,
+            "Content-Type": const.contentTypeShipRateXml,
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
         }
 
         result = requests.request("POST", url, headers=headers, data=payload)
         json_decoded = xmltodict.parse(result.content)
-        print("price-quotes ::", json_decoded)
 
         if result.status_code == 200:
             response = {
                 "shipment-id": json_decoded.get("shipment-id"),
                 "shipment-status": json_decoded.get("shipment-status"),
-                "tracking-pin": json_decoded.get("tracking-pin")
+                "tracking-pin": json_decoded.get("tracking-pin"),
             }
 
         else:
             response = {
-                "shipment-id": None
+                "shipment-id": None,
+                "shipment-status": False,
+                "tracking-pin": None,
             }
 
-        return Response(response, status=status.HTTP_200_OK)   
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class CanadaPostPrice(APIView):
+    """
+    Get price form the canada post
+
+    """
+
     def post(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         user_id = getUserIdByToken(auth_header)
         user = Users.objects.get(id=user_id)
-        user_canadapost = CandapostUserDetails.objects.filter(user__id=user_id).first()
         serializers = CanadaPostPriceSerializer(data=request.data)
         if not serializers.is_valid():
             return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -323,24 +319,17 @@ class CanadaPostPrice(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        url = "https://ct.soa-gw.canadapost.ca/rs/ship/price"
-        cred = base64.b64encode(
-            str(
-                os.environ.get("canadapost_username_debug")
-                + ":"
-                + os.environ.get("canadapost_password_debug")
-            ).encode("ascii")
-        )
+        url = f"https://{const.canadaPost}/rs/ship/price"
         headers = {
-            "Accept": "application/vnd.cpc.ship.rate-v4+xml",
-            "Content-Type": "application/vnd.cpc.ship.rate-v4+xml",
-            "Authorization": "Basic " + cred.decode("ascii"),
-            "Accept-language": "en-CA",
+            "Accept": const.contentTypeShipRateXml,
+            "Content-Type": const.contentTypeShipRateXml,
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
         }
 
         xml_content = f"""
             <mailing-scenario xmlns="http://www.canadapost.ca/ws/ship/rate-v4">
-            <customer-number>{user_canadapost.customer_number}</customer-number>
+            <customer-number>0006006116</customer-number>
             <parcel-characteristics>
             <weight>1</weight>
             </parcel-characteristics>
@@ -356,6 +345,52 @@ class CanadaPostPrice(APIView):
         response = requests.post(url=url, data=xml_content, headers=headers)
 
         json_decoded = xmltodict.parse(response.content)
-        price = json_decoded["price-quotes"]["price-quote"][0]["price-details"]["base"]
+        output_data = []
+        for data in json_decoded["price-quotes"]["price-quote"]:
+            output_data.append(
+                {
+                    "price": data.get("price-details", {}).get("base"),
+                    "taxes": "1.3",
+                    "service_name": data.get("service-name"),
+                }
+            )
 
-        return Response(data={"price": price}, status=status.HTTP_200_OK)
+        return Response(data=output_data, status=status.HTTP_200_OK)
+
+
+class GetArtifactAPI(APIView):
+    """
+    Get lable for the shipment
+
+    """
+
+    def get(self, request):
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        user_id = getUserIdByToken(auth_header)
+        user = Users.objects.get(id=user_id)
+        get_link = request.data.get("artifact_link")
+        if not get_link:
+            return Response(
+                {"message": "artifact link not found!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if not user:
+            return Response(
+                {"message": "User not found or Unauthorized !"},
+                status=status.HTTP_200_OK,
+            )
+        headers = {
+            "Accept": "application/pdf",
+            "Content-Type": "application/vnd.cpc.shipment-v8+xml",
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
+        }
+
+        response = requests.get(url=get_link, headers=headers)
+        if response.status_code == 200:
+            return HttpResponse(
+                response.content,
+                status=status.HTTP_200_OK,
+                content_type="application/pdf",
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
