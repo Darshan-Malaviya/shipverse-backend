@@ -382,6 +382,7 @@ class CanadaPostPrice(APIView):
                         "price": data.get("price-details", {}).get("base"),
                         "taxes": "1.3",
                         "service_name": data.get("service-name"),
+                        "service_code": data.get("service-code"),
                     }
                 )
             if output_data:
