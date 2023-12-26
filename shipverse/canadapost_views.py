@@ -169,7 +169,7 @@ class ShipmentCreateAPI(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        user_carrier = UserCarrier.objects.filter(user_id=user_id).first()
+        user_carrier = UserCarrier.objects.filter(user=user_id).first() #----- user_id
 
         data = request.data
 
@@ -177,7 +177,7 @@ class ShipmentCreateAPI(APIView):
         customer_no = os.environ["customer_number"]
         group_id = data.get("group_id")
         shipping_request_point = data.get("shipmentData", {}).get("zip")
-        service_code = data.get("service_code") or "DOM.RP"
+        service_code = data.get("shipmentData", {}).get("service_code")
 
         # Sender's Info
         sender_name = user.username
@@ -195,12 +195,12 @@ class ShipmentCreateAPI(APIView):
 
         # Receiver's Info
         receiver_name = data.get("shipmentData", {}).get("recipient")
-        receiver_company = data.get("soldTo", {}).get("companyName")
-        receiver_address_line_1 = data.get("shipmentData", {}).get("street")
-        receiver_city = data.get("shipmentData", {}).get("city")
-        receiver_state = data.get("shipmentData", {}).get("stateCode")
-        receiver_country_code = data.get("shipmentData", {}).get("countryCode")
-        receiver_postal_zip_code = data.get("shipmentData", {}).get("zip")
+        receiver_company = data.get("shipmentData",{}).get("soldTo", {}).get("companyName")
+        receiver_address_line_1 = data.get("shipmentData", {}).get("soldTo", {}).get("street")
+        receiver_city = data.get("shipmentData", {}).get("soldTo", {}).get("city")  
+        receiver_state = data.get("shipmentData", {}).get("soldTo", {}).get("stateCode")
+        receiver_country_code = data.get("shipmentData", {}).get("soldTo", {}).get("countryCode")
+        receiver_postal_zip_code = data.get("shipmentData", {}).get("soldTo", {}).get("postalCode")
 
         # Parcel Info
         parcel_weight = data.get("shipmentData", {}).get("weight")
@@ -383,6 +383,7 @@ class CanadaPostPrice(APIView):
                         "price": data.get("price-details", {}).get("base"),
                         "taxes": "1.3",
                         "service_name": data.get("service-name"),
+                        "service_code": data.get("service-code"),
                     }
                 )
             if output_data:
