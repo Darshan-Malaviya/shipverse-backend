@@ -216,7 +216,7 @@ def my_cron_job():
                 logging.info('There was an error sending an email: ', e)
 
 
-def add_carrier_user(user, data):
+def add_carrier_user(user, data, token_id = None):
     return UserCarrier.objects.create(
         user = user,
         carrier = data['carrier'],
@@ -232,5 +232,6 @@ def add_carrier_user(user, data):
         account_nickname = data['account_nickname'],
         account_number = data['account_number'],
         country = data["country"],
-        postcode = data['postcode']
+        postcode = data['postcode'],
+        token_id = token_id
     )
