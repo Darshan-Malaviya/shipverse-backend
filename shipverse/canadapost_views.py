@@ -168,7 +168,7 @@ class ShipmentCreateAPI(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        user_carrier = UserCarrier.objects.filter(user=user_id).first() #----- user_id
+        user_carrier = UserCarrier.objects.filter(user=user_id).first() 
 
         data = request.data
 
@@ -234,7 +234,7 @@ class ShipmentCreateAPI(APIView):
                                         <city>{sender_city}</city>
                                         <prov-state>{sender_state}</prov-state>
                                         <country-code>{sender_country_code}</country-code>
-                                        <postal-zip-code>{sender_postal_zip_code}</postal-zip-code>
+                                        <postal-zip-code>{sender_postal_zip_code.replace(" ","")}</postal-zip-code>
                                     </address-details>
                                 </sender>
                                 <destination>
@@ -245,7 +245,7 @@ class ShipmentCreateAPI(APIView):
                                         <city>{receiver_city}</city>
                                         <prov-state>{receiver_state}</prov-state>
                                         <country-code>{receiver_country_code}</country-code>
-                                        <postal-zip-code>{receiver_postal_zip_code}</postal-zip-code>
+                                        <postal-zip-code>{receiver_postal_zip_code.replace(" ","")}</postal-zip-code>
                                     </address-details>
                                 </destination>
                                 <parcel-characteristics>
@@ -394,88 +394,6 @@ class CanadaPostPrice(APIView):
                 {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
             )
 
-# class CanadaPostPrice(APIView):
-#     """
-#     Get price form the canada post
-
-#     """
-
-#     def post(self, request):
-#         auth_header = request.META.get("HTTP_AUTHORIZATION")
-#         if auth_header:
-#             try:
-#                 user_id = getUserIdByToken(auth_header)
-#                 user = Users.objects.get(id=user_id, isEmailVerified = True)
-#             except:
-#                 return Response(
-#                     {"message": "User not found or Unauthorized or please verify email !"},
-#                     status=status.HTTP_200_OK,
-#                 )
-#             serializers = CanadaPostPriceSerializer(data=request.data)
-#             if not serializers.is_valid():
-#                 return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#             origin_postal_code = request.data.get("origin_postal_code")
-#             postal_code = request.data.get("postal_code")
-#             if request.data.get("weight"):
-#                 weight = request.data.get("weight")
-#                 # length = request.data.get("length")
-#                 # width = request.data.get("width")
-#                 # height = request.data.get("height")
-
-#             else:
-#                 weight = "1"
-#                 # length = "33"
-#                 # width = "25"
-#                 # height = "33"
-
-#             url = f"https://{const.canadaPost}/rs/ship/price"
-#             headers = {
-#                 "Accept": const.contentTypeShipRateXml,
-#                 "Content-Type": const.contentTypeShipRateXml,
-#                 "Authorization": "Basic " + const.encoded_cred,
-#                 "Accept-language": const.acceptLanguage,
-#             }
-
-#             xml_content = f"""
-#                 <mailing-scenario xmlns="http://www.canadapost.ca/ws/ship/rate-v4">
-#                 <customer-number>0006006116</customer-number>
-#                 <parcel-characteristics>
-#                 <weight>{weight}</weight>
-
-#                 </parcel-characteristics>
-#                 <origin-postal-code>{origin_postal_code}</origin-postal-code>
-#                 <destination>
-#                 <domestic>
-#                 <postal-code>{postal_code}</postal-code>
-#                 </domestic>
-#                 </destination>
-#                 </mailing-scenario>
-#                 """
-
-#             response = requests.post(url=url, data=xml_content, headers=headers)
-#             print("response ::", response.status_code)
-
-#             json_decoded = xmltodict.parse(response.content)
-
-            
-#             output_data = []
-#             for data in json_decoded["price-quotes"]["price-quote"]:
-#                 output_data.append(
-#                     {
-#                         "price": data.get("price-details", {}).get("base"),
-#                         "taxes": "1.3",
-#                         "service_name": data.get("service-name"),
-#                     }
-#                 )
-#             if output_data:
-#                 return Response(output_data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response(response, status=status.HTTP_200_OK)
-#         else:
-#             return Response(
-#                 {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
-#             )
 
 class GetArtifactAPI(APIView):
     """
