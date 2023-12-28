@@ -198,6 +198,7 @@ class UserCarrier(models.Model):
 
 
 class CandapostUserDetails(models.Model):
+    user = models.ForeignKey(Users,on_delete=models.CASCADE)
     customer_number = models.CharField(max_length=250, null=True)
     contract_number = models.CharField(max_length=250, null=True)
     merchant_username = models.CharField(max_length=250, null=True)
