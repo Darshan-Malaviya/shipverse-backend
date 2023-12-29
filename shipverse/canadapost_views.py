@@ -12,6 +12,11 @@ from .models import Users, CandapostUserDetails, UserCarrier
 from .common import add_carrier_user
 from .serializers import UserCarrierSerializer, CanadaPostPriceSerializer
 import shipverse.constant as const
+from shipverse.models import *
+from rest_framework.parsers import JSONParser
+from django.http.response import JsonResponse
+
+
 
 
 class CanadaUsersAccountDetails(APIView):
@@ -220,6 +225,8 @@ class ShipmentCreateAPI(APIView):
             parcel_width = data.get("shipmentData", {}).get("width")
             parcel_height = data.get("shipmentData", {}).get("height")
 
+            insurance_value = data.get("shipmentData", {}).get("declared_value") if data.get("shipmentData", {}).get("declared_value") else None
+
             # Send Notification to
             notification_email = user.email
 
@@ -260,8 +267,17 @@ class ShipmentCreateAPI(APIView):
                                             <country-code>{receiver_country_code}</country-code>
                                             <postal-zip-code>{receiver_postal_zip_code.replace(" ","")}</postal-zip-code>
                                         </address-details>
-                                    </destination>
-                                    <parcel-characteristics>
+                                    </destination> 
+                            """
+            print("pauload", payload)
+            if insurance_value:
+                payload += f'''<options>
+                                    <option>
+                                        <option-code>COV</option-code>
+                                        <option-amount>{insurance_value}</option-amount>
+                                    </option>
+                                </options>'''
+            payload+= f'''<parcel-characteristics>
                                         <weight>{parcel_weight}</weight>
                                         <dimensions>
                                             <length>{parcel_length}</length>
@@ -289,8 +305,7 @@ class ShipmentCreateAPI(APIView):
                                         <intended-method-of-payment>CreditCard</intended-method-of-payment>
                                     </settlement-info>
                                 </delivery-spec>
-                            </shipment>"""
-
+                            </shipment>'''
             headers = {
                 "Accept": "application/vnd.cpc.shipment-v8+xml",
                 "Content-Type": "application/vnd.cpc.shipment-v8+xml",
@@ -300,7 +315,7 @@ class ShipmentCreateAPI(APIView):
 
             result = requests.request("POST", url, headers=headers, data=payload)
             json_decoded = xmltodict.parse(result.content)
-
+            print("json_decoded ::", json_decoded)
             if result.status_code == 200:
                 response = {
                     "shipment-id": json_decoded.get("shipment-info",{}).get("shipment-id"),
@@ -350,6 +365,7 @@ class CanadaPostPrice(APIView):
             length = request.data.get("length") if request.data.get("length") else "5"
             width = request.data.get("width") if request.data.get("width") else "5"
             height = request.data.get("height") if request.data.get("height") else "5"
+            insurance_value = request.data.get("insurance_value") if request.data.get("insurance_value") else "500"
 
             url = f"https://{const.canadaPost}/rs/ship/price"
             headers = {
@@ -362,6 +378,12 @@ class CanadaPostPrice(APIView):
             xml_content = f"""
                 <mailing-scenario xmlns="http://www.canadapost.ca/ws/ship/rate-v4">
                     <customer-number>{const.customerNo}</customer-number>
+                    <options>
+                        <option>
+                            <option-code>COV</option-code>
+                            <option-amount>{insurance_value}</option-amount>
+                        </option>
+                    </options>
                     <parcel-characteristics>
                         <weight>{weight}</weight>
                         <dimensions>
@@ -385,6 +407,7 @@ class CanadaPostPrice(APIView):
                     }, status=status.HTTP_400_BAD_REQUEST)
 
             json_decoded = xmltodict.parse(response.content)
+            print("json decoded", json_decoded)
             output_data = []
             for data in json_decoded["price-quotes"]["price-quote"]:
                 output_data.append(
@@ -449,6 +472,41 @@ class GetArtifactAPI(APIView):
                     content_type="application/pdf",
                 )
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
+            )
+
+
+class CreatePackageCanadaPost(APIView):
+    def post(self,request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if auth_header:
+            try:
+                user_id = getUserIdByToken(auth_header)
+                user = Users.objects.get(id=user_id, isEmailVerified = True)
+            except:
+                return Response(
+                    {"message": "User not found or Unauthorized or Invalid Token!"},
+                    status=status.HTTP_200_OK,
+                )
+            user_data = JSONParser().parse(request)
+            try:
+                package = Packages.objects.get(
+                    userId=user_id, packageName=user_data['packageData']['packageName'])
+            except:
+                package = Packages(
+                    userId=user_id, packageName=user_data['packageData']['packageName'])
+
+            package.packageName = user_data['packageData']['packageName']
+            package.measureUnit = user_data['packageData']['measureUnit']
+            package.length = user_data['packageData']['length']
+            package.width = user_data['packageData']['width']
+            package.height = user_data['packageData']['height']
+            package.packageCode = "03"
+            package.upsPackage = False
+            package.save()
+            return JsonResponse({'saved': True}, status=status.HTTP_200_OK)
         else:
             return Response(
                 {"message": "Authorization token not found!"}, status=status.HTTP_200_OK

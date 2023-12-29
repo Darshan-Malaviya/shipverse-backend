@@ -111,4 +111,6 @@ urlpatterns = [
     re_path(r'^api/carrier/get_canada_post_price', canadapost_views.CanadaPostPrice.as_view()),
     re_path(r'^api/carrier/get_artifact', canadapost_views.GetArtifactAPI.as_view()),
 
+    re_path(r'^api/canadapost/addPackage', canadapost_views.CreatePackageCanadaPost.as_view()),
+
 ]
