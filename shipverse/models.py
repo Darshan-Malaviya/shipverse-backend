@@ -60,7 +60,7 @@ class Packages(models.Model):
     height = models.FloatField(blank=False, default='0')
     packageCode = models.CharField(max_length=70, blank=True, default='')
     upsPackage = models.BooleanField(default=False)
-    
+    # canadaPostPackage = models.BooleanField(default=False)
 
 
 class StoreUsers(models.Model):
