@@ -30,7 +30,7 @@ def addshopifystore(request):
                             '&scope=' + scopes + '&redirect_uri=' + settings.SHOPIFY_REDIRECT_URL)
         else:
             url = request.build_absolute_uri()
-            modified_url = url.replace("http", "https")
+            modified_url = "https:" + url.split(":")[1]
             modified_url = modified_url.replace(
                 settings.SHOPIFY_REDIRECT_URL, settings.FRONTEND_URL+"/application/settings/onboard")
 
