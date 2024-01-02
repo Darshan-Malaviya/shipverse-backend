@@ -103,8 +103,8 @@ if Environment:
             'PORT': os.environ.get("DB_PORT"),
         }
     }
-    FRONTEND_URL = 'http://localhost:3000'
-    BACKEND_URL = 'http://localhost:8080'
+    FRONTEND_URL = 'https://dev1.goshipverse.com'
+    BACKEND_URL = 'https://dev1.goshipverse.com'
     # BC_CLIENT_ID = env('bc_client_id_debug')
     # BC_CLIENT_SECRET = env('bc_client_secret_debug')
     # BC_TOKEN_ENDPOINT = env('bc_token_endpoint')
