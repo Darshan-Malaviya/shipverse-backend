@@ -17,8 +17,6 @@ from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
 
 
-
-
 class CanadaUsersAccountDetails(APIView):
     """
     Step1 -  Create canada post account.
@@ -212,12 +210,14 @@ class ShipmentCreateAPI(APIView):
 
             # Receiver's Info
             receiver_name = data.get("shipmentData", {}).get("recipient")
-            receiver_company = data.get("shipmentData",{}).get("soldTo", {}).get("companyName")
+            receiver_company = data.get("shipmentData",{}).get("soldTo", {}).get("companyName") or data.get("shipmentData",{}).get("attentionName")
+
             receiver_address_line_1 = data.get("shipmentData", {}).get("soldTo", {}).get("street")
             receiver_city = data.get("shipmentData", {}).get("soldTo", {}).get("city")  
             receiver_state = data.get("shipmentData", {}).get("soldTo", {}).get("stateCode")
             receiver_country_code = data.get("shipmentData", {}).get("soldTo", {}).get("countryCode")
             receiver_postal_zip_code = data.get("shipmentData", {}).get("soldTo", {}).get("postalCode")
+            
 
             # Parcel Info
             parcel_weight = data.get("shipmentData", {}).get("weight")
@@ -242,7 +242,7 @@ class ShipmentCreateAPI(APIView):
 
             payload = f"""<shipment xmlns="http://www.canadapost.ca/ws/shipment-v8">
                                 <group-id>{group_id}</group-id>
-                                <requested-shipping-point>{shipping_request_point}</requested-shipping-point>
+                                <requested-shipping-point>{shipping_request_point.replace(" ","")}</requested-shipping-point>
                                 <delivery-spec>
                                     <service-code>{service_code}</service-code>
                                     <sender>
@@ -269,7 +269,6 @@ class ShipmentCreateAPI(APIView):
                                         </address-details>
                                     </destination> 
                             """
-            print("pauload", payload)
             if insurance_value:
                 payload += f'''<options>
                                     <option>
@@ -277,35 +276,39 @@ class ShipmentCreateAPI(APIView):
                                         <option-amount>{insurance_value}</option-amount>
                                     </option>
                                 </options>'''
-            payload+= f'''<parcel-characteristics>
-                                        <weight>{parcel_weight}</weight>
-                                        <dimensions>
-                                            <length>{parcel_length}</length>
-                                            <width>{parcel_width}</width>
-                                            <height>{parcel_height}</height>
-                                        </dimensions>
-                                        <mailing-tube>false</mailing-tube>
-                                    </parcel-characteristics>
-                                    <notification>
-                                        <email>{notification_email}</email>
-                                        <on-shipment>true</on-shipment>
-                                        <on-exception>false</on-exception>
-                                        <on-delivery>true</on-delivery>
-                                    </notification>
-                                    <print-preferences>
-                                        <output-format>8.5x11</output-format>
-                                    </print-preferences>
-                                    <preferences>
-                                        <show-packing-instructions>true</show-packing-instructions>
-                                        <show-postage-rate>false</show-postage-rate>
-                                        <show-insured-value>true</show-insured-value>
-                                    </preferences>
-                                    <settlement-info>
-                                        <contract-id>{contract_id}</contract-id>
-                                        <intended-method-of-payment>CreditCard</intended-method-of-payment>
-                                    </settlement-info>
-                                </delivery-spec>
-                            </shipment>'''
+            payload+= f'''     
+                                <parcel-characteristics>
+                                    <weight>{parcel_weight}</weight>
+                                    <dimensions>
+                                        <length>{parcel_length}</length>
+                                        <width>{parcel_width}</width>
+                                        <height>{parcel_height}</height>
+                                    </dimensions>
+                                    <mailing-tube>false</mailing-tube>
+                                </parcel-characteristics>
+                                
+                                <notification>
+                                    <email>{notification_email}</email>
+                                    <on-shipment>true</on-shipment>
+                                    <on-exception>false</on-exception>
+                                    <on-delivery>true</on-delivery>
+                                </notification>
+                                <print-preferences>
+                                    <output-format>8.5x11</output-format>
+                                </print-preferences>
+                                
+                                <preferences>
+                                    <show-packing-instructions>true</show-packing-instructions>
+                                    <show-postage-rate>true</show-postage-rate>
+                                    <show-insured-value>true</show-insured-value>
+                                </preferences>
+                                
+                                <settlement-info>
+                                    <contract-id>{contract_id}</contract-id>
+                                    <intended-method-of-payment>CreditCard</intended-method-of-payment>
+                                </settlement-info>
+                            </delivery-spec>
+                        </shipment>'''
             headers = {
                 "Accept": "application/vnd.cpc.shipment-v8+xml",
                 "Content-Type": "application/vnd.cpc.shipment-v8+xml",
@@ -392,10 +395,10 @@ class CanadaPostPrice(APIView):
                             <height>{height}</height>
                         </dimensions>
                     </parcel-characteristics>
-                    <origin-postal-code>{origin_postal_code}</origin-postal-code>
+                    <origin-postal-code>{origin_postal_code.replace(" ","")}</origin-postal-code>
                     <destination>
                         <domestic>
-                            <postal-code>{postal_code}</postal-code>
+                            <postal-code>{postal_code.replace(" ","")}</postal-code>
                         </domestic>
                     </destination>
                 </mailing-scenario>
@@ -472,41 +475,6 @@ class GetArtifactAPI(APIView):
                     content_type="application/pdf",
                 )
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(
-                {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
-            )
-
-
-class CreatePackageCanadaPost(APIView):
-    def post(self,request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
-        if auth_header:
-            try:
-                user_id = getUserIdByToken(auth_header)
-                user = Users.objects.get(id=user_id, isEmailVerified = True)
-            except:
-                return Response(
-                    {"message": "User not found or Unauthorized or Invalid Token!"},
-                    status=status.HTTP_200_OK,
-                )
-            user_data = JSONParser().parse(request)
-            try:
-                package = Packages.objects.get(
-                    userId=user_id, packageName=user_data['packageData']['packageName'])
-            except:
-                package = Packages(
-                    userId=user_id, packageName=user_data['packageData']['packageName'])
-
-            package.packageName = user_data['packageData']['packageName']
-            package.measureUnit = user_data['packageData']['measureUnit']
-            package.length = user_data['packageData']['length']
-            package.width = user_data['packageData']['width']
-            package.height = user_data['packageData']['height']
-            package.packageCode = "03"
-            package.upsPackage = False
-            package.save()
-            return JsonResponse({'saved': True}, status=status.HTTP_200_OK)
         else:
             return Response(
                 {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
