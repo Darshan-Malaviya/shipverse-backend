@@ -217,8 +217,8 @@ class ShipmentCreateAPI(APIView):
             receiver_state = data.get("shipmentData", {}).get("soldTo", {}).get("stateCode")
             receiver_country_code = data.get("shipmentData", {}).get("soldTo", {}).get("countryCode")
             receiver_postal_zip_code = data.get("shipmentData", {}).get("soldTo", {}).get("postalCode")
+            receiver_mobile_number = data.get("shipmentData", {}).get("soldTo", {}).get("phone")
             
-
             # Parcel Info
             parcel_weight = data.get("shipmentData", {}).get("weight")
             parcel_length = data.get("shipmentData", {}).get("length")
@@ -230,6 +230,25 @@ class ShipmentCreateAPI(APIView):
             # Send Notification to
             notification_email = user.email
 
+            # International Form
+            products = data.get("shipmentData", {}).get("products")
+            
+            unit_weight  = int((int(parcel_weight)-len(products))/len(products))
+
+            sku_list = ""
+            for product in products:
+                sku_list += f'''
+                    <item>
+                        <customs-description>{product.get("description")}</customs-description>
+                        <sku>{product.get("sku")}</sku>
+                        <customs-number-of-units>{product.get("quantity")}</customs-number-of-units>
+                        <unit-weight>{unit_weight/int(product.get("quantity"))}</unit-weight>
+                        <customs-value-per-unit>{product.get("value")}</customs-value-per-unit>
+                    </item>
+                '''
+            reasonForExport = data.get("shipmentData", {}).get("internationalForm", {}).get("reasonForExport")
+            currency_code = data.get("shipmentData", {}).get("internationalForm", {}).get("curCode")
+
             # contract_id = user_canadapost.contract_number
             contract_id = "0044084515"
             intended_method_of_payment = (
@@ -240,7 +259,78 @@ class ShipmentCreateAPI(APIView):
 
             url = f"https://{const.canadaPost}/rs/{customer_no}/{customer_no}/shipment"
 
-            payload = f"""<shipment xmlns="http://www.canadapost.ca/ws/shipment-v8">
+            if service_code[0:3] == "DOM":
+
+                payload = f"""<shipment xmlns="http://www.canadapost.ca/ws/shipment-v8">
+                                    <group-id>{group_id}</group-id>
+                                    <requested-shipping-point>{shipping_request_point.replace(" ","")}</requested-shipping-point>
+                                    <delivery-spec>
+                                        <service-code>{service_code}</service-code>
+                                        <sender>
+                                            <name>{sender_name}</name>
+                                            <company>{sender_company}</company>
+                                            <contact-phone>{sender_phone_no}</contact-phone>
+                                            <address-details>
+                                                <address-line-1>{sender_address_line_1}</address-line-1>
+                                                <city>{sender_city}</city>
+                                                <prov-state>{sender_state}</prov-state>
+                                                <country-code>{sender_country_code}</country-code>
+                                                <postal-zip-code>{sender_postal_zip_code.replace(" ","")}</postal-zip-code>
+                                            </address-details>
+                                        </sender>
+                                        <destination>
+                                            <name>{receiver_name}</name>
+                                            <company>{receiver_company}</company>
+                                            <address-details>
+                                                <address-line-1>{receiver_address_line_1}</address-line-1>
+                                                <city>{receiver_city}</city>
+                                                <prov-state>{receiver_state}</prov-state>
+                                                <country-code>{receiver_country_code}</country-code>
+                                                <postal-zip-code>{receiver_postal_zip_code.replace(" ","")}</postal-zip-code>
+                                            </address-details>
+                                        </destination> 
+                                """
+                if insurance_value:
+                    payload += f'''<options>
+                                        <option>
+                                            <option-code>COV</option-code>
+                                            <option-amount>{insurance_value}</option-amount>
+                                        </option>
+                                    </options>'''  
+                payload+= f'''      <parcel-characteristics>
+                                        <weight>{parcel_weight}</weight>
+                                        <dimensions>
+                                            <length>{parcel_length}</length>
+                                            <width>{parcel_width}</width>
+                                            <height>{parcel_height}</height>
+                                        </dimensions>
+                                        <mailing-tube>false</mailing-tube>
+                                    </parcel-characteristics>
+                                    
+                                    <notification>
+                                        <email>{notification_email}</email>
+                                        <on-shipment>true</on-shipment>
+                                        <on-exception>false</on-exception>
+                                        <on-delivery>true</on-delivery>
+                                    </notification>
+                                    <print-preferences>
+                                        <output-format>8.5x11</output-format>
+                                    </print-preferences>
+                                    
+                                    <preferences>
+                                        <show-packing-instructions>true</show-packing-instructions>
+                                        <show-postage-rate>true</show-postage-rate>
+                                        <show-insured-value>true</show-insured-value>
+                                    </preferences>
+                                    
+                                    <settlement-info>
+                                        <contract-id>{contract_id}</contract-id>
+                                        <intended-method-of-payment>CreditCard</intended-method-of-payment>
+                                    </settlement-info>
+                                </delivery-spec>
+                            </shipment>'''
+            else:
+                payload = f"""<shipment xmlns="http://www.canadapost.ca/ws/shipment-v8">
                                 <group-id>{group_id}</group-id>
                                 <requested-shipping-point>{shipping_request_point.replace(" ","")}</requested-shipping-point>
                                 <delivery-spec>
@@ -260,6 +350,7 @@ class ShipmentCreateAPI(APIView):
                                     <destination>
                                         <name>{receiver_name}</name>
                                         <company>{receiver_company}</company>
+                                        <client-voice-number>{receiver_mobile_number}</client-voice-number>
                                         <address-details>
                                             <address-line-1>{receiver_address_line_1}</address-line-1>
                                             <city>{receiver_city}</city>
@@ -269,46 +360,59 @@ class ShipmentCreateAPI(APIView):
                                         </address-details>
                                     </destination> 
                             """
-            if insurance_value:
-                payload += f'''<options>
-                                    <option>
-                                        <option-code>COV</option-code>
-                                        <option-amount>{insurance_value}</option-amount>
-                                    </option>
-                                </options>'''
-            payload+= f'''     
-                                <parcel-characteristics>
-                                    <weight>{parcel_weight}</weight>
-                                    <dimensions>
-                                        <length>{parcel_length}</length>
-                                        <width>{parcel_width}</width>
-                                        <height>{parcel_height}</height>
-                                    </dimensions>
-                                    <mailing-tube>false</mailing-tube>
-                                </parcel-characteristics>
-                                
-                                <notification>
-                                    <email>{notification_email}</email>
-                                    <on-shipment>true</on-shipment>
-                                    <on-exception>false</on-exception>
-                                    <on-delivery>true</on-delivery>
-                                </notification>
-                                <print-preferences>
-                                    <output-format>8.5x11</output-format>
-                                </print-preferences>
-                                
-                                <preferences>
-                                    <show-packing-instructions>true</show-packing-instructions>
-                                    <show-postage-rate>true</show-postage-rate>
-                                    <show-insured-value>true</show-insured-value>
-                                </preferences>
-                                
-                                <settlement-info>
-                                    <contract-id>{contract_id}</contract-id>
-                                    <intended-method-of-payment>CreditCard</intended-method-of-payment>
-                                </settlement-info>
-                            </delivery-spec>
-                        </shipment>'''
+                if insurance_value:
+                    payload += f'''<options>
+                                        <option>
+                                            <option-code>COV</option-code>
+                                            <option-amount>{insurance_value}</option-amount>
+                                        </option>
+                                    </options>'''
+                payload+= f'''      <options>
+                                        <option>
+                                            <option-code>RASE</option-code>
+                                        </option>
+                                    </options>
+                                    <parcel-characteristics>
+                                        <weight>{parcel_weight}</weight>
+                                        <dimensions>
+                                            <length>{parcel_length}</length>
+                                            <width>{parcel_width}</width>
+                                            <height>{parcel_height}</height>
+                                        </dimensions>
+                                        <mailing-tube>false</mailing-tube>
+                                    </parcel-characteristics>
+                                    
+                                    <notification>
+                                        <email>{notification_email}</email>
+                                        <on-shipment>true</on-shipment>
+                                        <on-exception>false</on-exception>
+                                        <on-delivery>true</on-delivery>
+                                    </notification>
+                                    <print-preferences>
+                                        <output-format>8.5x11</output-format>
+                                    </print-preferences>
+                                    
+                                    <preferences>
+                                        <show-packing-instructions>true</show-packing-instructions>
+                                        <show-postage-rate>true</show-postage-rate>
+                                        <show-insured-value>true</show-insured-value>
+                                    </preferences>
+                                    <customs>
+                                        <currency>{currency_code}</currency>
+                                        <conversion-from-cad>109.00</conversion-from-cad>
+                                        <reason-for-export>{reasonForExport}</reason-for-export>
+                                        <other-reason></other-reason>
+                                        <sku-list>
+                                            {sku_list}
+                                        </sku-list>
+                                    </customs>
+                                    <settlement-info>
+                                        <contract-id>{contract_id}</contract-id>
+                                        <intended-method-of-payment>CreditCard</intended-method-of-payment>
+                                    </settlement-info>
+                                </delivery-spec>
+                            </shipment>'''
+
             headers = {
                 "Accept": "application/vnd.cpc.shipment-v8+xml",
                 "Content-Type": "application/vnd.cpc.shipment-v8+xml",
@@ -479,5 +583,3 @@ class GetArtifactAPI(APIView):
             return Response(
                 {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
             )
-
-
