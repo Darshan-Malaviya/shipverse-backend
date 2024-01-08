@@ -24,7 +24,7 @@ def get_sender_info(user, user_carrier, from_location):
             "company": user_carrier.company_name,
             "contact-phone": user.phone,
             "address-details": {
-                "address-line-1": from_location.address1,
+                "address-line-1": from_location.address or from_location.address1,
                 "city": from_location.city,  
                 "prov-state": from_location.stateCode, 
                 "country-code": from_location.countryCode,  
