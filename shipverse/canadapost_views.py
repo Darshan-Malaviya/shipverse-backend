@@ -180,7 +180,6 @@ class ShipmentCreateAPI(APIView):
             user = get_authenticated_user(request)
             user_carrier = UserCarrier.objects.filter(user=user).first()
             from_location = FromLocation.objects.filter(userId = user.id).first()
-            # print("from loc", from_location.postalCode)
             data = request.data
             customer_no = os.environ["customer_number"]
             group_id = data.get("group_id")
@@ -197,20 +196,10 @@ class ShipmentCreateAPI(APIView):
 
             payment_option = data.get("shipmentData", {}).get("paymentInformation", {}).get("paymentMethod")
 
-            if not payment_option == "creditcard":
+            if not payment_option.lower() == "creditcard":
                 settlement_info = {
                     "contract_id": "0044084515",
-                    "intended_method_of_payment": "creditcard",
-                }
-            elif not payment_option == "account":
-                settlement_info = {
-                    "contract_id": "0044084515",
-                    "intended_method_of_payment": "account",  
-                }
-            else:
-                settlement_info = {
-                    "contract_id": "0044084515",
-                    "intended_method_of_payment": payment_option, 
+                    "intended_method_of_payment": "CreditCard",
                 }
 
             url = f"https://{const.canadaPost}/rs/{customer_no}/{customer_no}/shipment"
@@ -247,12 +236,9 @@ class ShipmentCreateAPI(APIView):
                 }
             else:
                 response = {
-                    "shipment-id": None,
-                    "shipment-status": False,
-                    "tracking-pin": None,
+                    "message": json_decoded
                 }
-                print("json_decoded ::", json_decoded)
-                return Response(json_decoded.get("message",{}).get("description"), status=status.HTTP_400_BAD_REQUEST)
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
             return Response(response, status=status.HTTP_200_OK)
 
@@ -284,7 +270,6 @@ class CanadaPostPrice(APIView):
             origin_postal_code = request.data.get("origin_postal_code")
             postal_code = request.data.get("postal_code")
             country_code = request.data.get("country_code")
-            print("origin_postal_code ::", origin_postal_code)
 
             weight = request.data.get("weight") if request.data.get("weight") else "1"
             length = request.data.get("length")
@@ -343,12 +328,11 @@ class CanadaPostPrice(APIView):
 
 
             response = requests.post(url=url, data=xml_content, headers=headers)
-            print(response.content)
+            json_decoded = xmltodict.parse(response.content)
             if response.status_code != 200:
                 return Response({
-                        "message": "Please enter valid data !!!",
+                        "message": json_decoded,
                     }, status=status.HTTP_400_BAD_REQUEST)
-
             json_decoded = xmltodict.parse(response.content)
             print("json decoded", json_decoded)
             output_data = []
