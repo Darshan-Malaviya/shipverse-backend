@@ -196,7 +196,7 @@ class ShipmentCreateAPI(APIView):
 
             payment_option = data.get("shipmentData", {}).get("paymentInformation", {}).get("paymentMethod")
 
-            if not payment_option.lower() == "creditcard":
+            if not payment_option == "CreditCard":
                 settlement_info = {
                     "contract_id": "0044084515",
                     "intended_method_of_payment": "CreditCard",
