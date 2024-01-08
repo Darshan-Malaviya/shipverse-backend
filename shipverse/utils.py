@@ -25,10 +25,10 @@ def get_sender_info(user, user_carrier, from_location):
             "contact-phone": user.phone,
             "address-details": {
                 "address-line-1": from_location.address1,
-                "city": from_location.city,  # or user_carrier.city
-                "prov-state": from_location.stateCode,  # or user_carrier.state
-                "country-code": from_location.countryCode,  # or user_carrier.country
-                "postal-zip-code": from_location.postalCode,  # or user_carrier.postcode
+                "city": from_location.city,  
+                "prov-state": from_location.stateCode, 
+                "country-code": from_location.countryCode,  
+                "postal-zip-code": from_location.postalCode,  
             }
         }
 
@@ -44,8 +44,7 @@ def get_receiver_info(data):
                 "city": sold_to.get("city"),
                 "prov-state": sold_to.get("stateCode"),
                 "country-code": sold_to.get("countryCode"),
-                # "postal-zip-code": sold_to.get("postalCode"),
-                "postal-zip-code": data.get("shipmentData", {}).get("zip"),
+                "postal-zip-code": sold_to.get("postalCode")
             }
         }
 
@@ -93,13 +92,31 @@ def get_customs_info(data):
                 <customs-value-per-unit>{product.get("value")}</customs-value-per-unit>
             </item>
         '''
-    print("sku -list", sku_list)
+        value = float(product.get("value"))
+        # print("value", type(value))
     reason_for_export = data.get("shipmentData", {}).get("internationalForm", {}).get("reasonForExport")
     currency_code = data.get("shipmentData", {}).get("internationalForm", {}).get("curCode")
+    # value = data.get("shipmentData", {}).get("products", {}).get("value")
+    # print("value", value)
+
+    exchange_rates = {
+        "CAD": 1.0,  # Canadian Dollar
+        "USD": 0.75,  # Example: Exchange rate for USD
+        "INR": 62.23 
+        # Add more currencies and their exchange rates as needed
+    }
+    conversion_rate = exchange_rates.get(currency_code, None)
+    print(conversion_rate)
+    if conversion_rate is not None:
+        value_in_foreign_currency = value * conversion_rate
+    else:
+        value_in_foreign_currency = None
+
+    print("value_in_foreign_currency", value_in_foreign_currency)
 
     return {
         "currency": currency_code,
-        "conversion-from-cad": "109.00",
+        "conversion-from-cad": value_in_foreign_currency,
         "reason-for-export": reason_for_export,
         "other-reason": "",
         "sku-list": sku_list,
@@ -172,7 +189,7 @@ def build_shipment_payload(
                             <show-insured-value>true</show-insured-value>
                         </preferences>
                         """
-        if service_code.startswith("INT"):
+        if service_code.startswith("INT") or service_code.startswith("USA"):
             if customs_info:
                 payload += f"""<customs>
                                 <currency>{customs_info['currency']}</currency>
