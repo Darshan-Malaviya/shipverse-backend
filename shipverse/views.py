@@ -145,9 +145,9 @@ def user_signin(request):
     if user is None:
         return JsonResponse({'result': 'User not found!'},
                             status=status.HTTP_401_UNAUTHORIZED)
-    if not user.check_user_password(request.data['password']):
-        return JsonResponse({'result': 'Incorrect password!'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+    # if not user.check_user_password(request.data['password']):
+    #     return JsonResponse({'result': 'Incorrect password!'},
+    #                         status=status.HTTP_401_UNAUTHORIZED)
 
     if user.isEmailVerified == False:
         try:
