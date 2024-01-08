@@ -18,17 +18,17 @@ def get_authenticated_user(request):
         raise Exception("Authorization token not found!")
 
 
-def get_sender_info(user, user_carrier):
+def get_sender_info(user, user_carrier, from_location):
         return {
             "name": user.username,
             "company": user_carrier.company_name,
-            "contact-phone": user_carrier.phone,
+            "contact-phone": user.phone,
             "address-details": {
-                "address-line-1": user_carrier.street1,
-                "city": "MONTREAL",  # or user_carrier.city
-                "prov-state": "QC",  # or user_carrier.state
-                "country-code": "CA",  # or user_carrier.country
-                "postal-zip-code": "H2B1A0",  # or user_carrier.postcode
+                "address-line-1": from_location.address1,
+                "city": from_location.city,  # or user_carrier.city
+                "prov-state": from_location.stateCode,  # or user_carrier.state
+                "country-code": from_location.countryCode,  # or user_carrier.country
+                "postal-zip-code": from_location.postalCode,  # or user_carrier.postcode
             }
         }
 
@@ -44,7 +44,8 @@ def get_receiver_info(data):
                 "city": sold_to.get("city"),
                 "prov-state": sold_to.get("stateCode"),
                 "country-code": sold_to.get("countryCode"),
-                "postal-zip-code": sold_to.get("postalCode"),
+                # "postal-zip-code": sold_to.get("postalCode"),
+                "postal-zip-code": data.get("shipmentData", {}).get("zip"),
             }
         }
 
@@ -77,7 +78,10 @@ def get_options(data):
 
 def get_customs_info(data):
     products = data.get("shipmentData", {}).get("products")
-    unit_weight = int((int(data.get("shipmentData", {}).get("weight")) - len(products)) / len(products))
+    weight = int(data.get("shipmentData", {}).get("weight"))
+    print("weight", weight)
+    unit_weight = float(int((int(data.get("shipmentData", {}).get("weight")) / len(products))))
+    print("unit weight", unit_weight)
     sku_list = ""
     for product in products:
         sku_list += f'''
@@ -85,10 +89,11 @@ def get_customs_info(data):
                 <customs-description>{product.get("description")}</customs-description>
                 <sku>{product.get("sku")}</sku>
                 <customs-number-of-units>{product.get("quantity")}</customs-number-of-units>
-                <unit-weight>{unit_weight / int(product.get("quantity"))}</unit-weight>
+                <unit-weight>{unit_weight/product.get("quantity")}</unit-weight>
                 <customs-value-per-unit>{product.get("value")}</customs-value-per-unit>
             </item>
         '''
+    print("sku -list", sku_list)
     reason_for_export = data.get("shipmentData", {}).get("internationalForm", {}).get("reasonForExport")
     currency_code = data.get("shipmentData", {}).get("internationalForm", {}).get("curCode")
 

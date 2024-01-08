@@ -179,13 +179,15 @@ class ShipmentCreateAPI(APIView):
         try:
             user = get_authenticated_user(request)
             user_carrier = UserCarrier.objects.filter(user=user).first()
+            from_location = FromLocation.objects.filter(userId = user.id).first()
+            # print("from loc", from_location.postalCode)
             data = request.data
             customer_no = os.environ["customer_number"]
             group_id = data.get("group_id")
-            shipping_request_point = data.get("shipmentData", {}).get("zip")
+            shipping_request_point = from_location.postalCode
             service_code = data.get("shipmentData", {}).get("service_code")
 
-            sender_info = get_sender_info(user, user_carrier)
+            sender_info = get_sender_info(user, user_carrier, from_location)
             receiver_info = get_receiver_info(data)
             parcel_info = get_parcel_info(data)
 
@@ -231,7 +233,7 @@ class ShipmentCreateAPI(APIView):
                 notification_email,
                 customs_info,
                 settlement_info,
-            )
+            )   
 
             result = requests.post(url, headers=headers, data=payload)
             json_decoded = xmltodict.parse(result.content)
@@ -249,6 +251,8 @@ class ShipmentCreateAPI(APIView):
                     "shipment-status": False,
                     "tracking-pin": None,
                 }
+                print("json_decoded ::", json_decoded)
+                return Response(json_decoded.get("message",{}).get("description"), status=status.HTTP_400_BAD_REQUEST)
 
             return Response(response, status=status.HTTP_200_OK)
 
@@ -280,6 +284,7 @@ class CanadaPostPrice(APIView):
             origin_postal_code = request.data.get("origin_postal_code")
             postal_code = request.data.get("postal_code")
             country_code = request.data.get("country_code")
+            print("origin_postal_code ::", origin_postal_code)
 
             weight = request.data.get("weight") if request.data.get("weight") else "1"
             length = request.data.get("length")
@@ -387,7 +392,7 @@ class GetArtifactAPI(APIView):
             if not get_link:
                 return Response(
                     {"message": "artifact link not found!"},
-                    status=status.HTTP_404_NOT_FOUND,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             headers = {
                 "Accept": "application/pdf",
