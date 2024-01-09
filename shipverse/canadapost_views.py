@@ -263,12 +263,10 @@ class CanadaPostPrice(APIView):
                     {"message": "User not found or Unauthorized or Invalid Token!"},
                     status=status.HTTP_200_OK,
                 )
-            # serializers = CanadaPostPriceSerializer(data=request.data)
-            # if not serializers.is_valid():
-            #     return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
             origin_postal_code = request.data.get("origin_postal_code")
             postal_code = request.data.get("postal_code")
+            zip_code = request.data.get("zip_code")
             country_code = request.data.get("country_code")
 
             weight = request.data.get("weight") if request.data.get("weight") else "1"
@@ -309,22 +307,31 @@ class CanadaPostPrice(APIView):
                                 </parcel-characteristics>
                                 <origin-postal-code>{origin_postal_code.replace(" ","")}</origin-postal-code>
                                 """
-            if country_code:
-                xml_content += f"""
-                                <destination>
-                                    <international>
-                                        <country-code>{country_code.replace(" ","")}</country-code>
-                                    </international>
-                                </destination>
-                            </mailing-scenario>"""
-            else:         
+            if country_code == "CA":
                 xml_content += f""" 
                                 <destination>
                                     <domestic>                      
                                         <postal-code>{postal_code.replace(" ","")}</postal-code>
                                     </domestic>
                                 </destination>
-                            </mailing-scenario>"""
+                                """
+                
+            elif country_code == "US":
+                xml_content += f"""
+                                <destination>
+                                    <united-states>
+                                        <zip-code>{zip_code.replace(" ","")}</zip-code>
+                                    </united-states>
+                                </destination>
+                                """
+            else:         
+                xml_content += f""" 
+                                <destination>
+                                    <international>                      
+                                        <country-code>{country_code.replace(" ","")}</country-code>
+                                    </international>
+                                </destination>"""
+            xml_content +=f"""</mailing-scenario>"""
 
 
             response = requests.post(url=url, data=xml_content, headers=headers)
@@ -336,7 +343,11 @@ class CanadaPostPrice(APIView):
             json_decoded = xmltodict.parse(response.content)
             print("json decoded", json_decoded)
             output_data = []
-            for data in json_decoded["price-quotes"]["price-quote"]:
+            data_list = json_decoded["price-quotes"]["price-quote"]
+            if type(json_decoded["price-quotes"]["price-quote"]) == dict:
+                data_list = [json_decoded["price-quotes"]["price-quote"]]
+            
+            for data in data_list:
                 output_data.append(
                     {
                         "price": data.get("price-details", {}).get("base"),
