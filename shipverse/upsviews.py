@@ -231,13 +231,18 @@ def removeUser(request):
     if not user : 
         return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
     shipperno = user_data['shipperno']
+    carrier = user_data['carrier']
+
     try:
-        shipperLocation = UserCarrier.objects.get(
-            user=user, account_number=shipperno)   # Updated accountNumber to account_number
+        shipperLocation = UserCarrier.objects.filter(
+            user=user, account_number=shipperno, carrier = carrier).first() 
+        if not shipperLocation:
+            return JsonResponse({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        shipperLocation.delete()
+        return JsonResponse({'success': True}, status=status.HTTP_200_OK)
     except:
         return JsonResponse({'success': False}, status=status.HTTP_404_NOT_FOUND)
-    shipperLocation.delete()
-    return JsonResponse({'success': True}, status=status.HTTP_200_OK)
+    
 
 
 @api_view(['POST'])
