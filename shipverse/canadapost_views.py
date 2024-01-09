@@ -266,7 +266,7 @@ class CanadaPostPrice(APIView):
 
             origin_postal_code = request.data.get("origin_postal_code")
             postal_code = request.data.get("postal_code")
-            zip_code = request.data.get("zip_code")
+            # zip_code = request.data.get("zip_code")
             country_code = request.data.get("country_code")
 
             weight = request.data.get("weight") if request.data.get("weight") else "1"
@@ -320,7 +320,7 @@ class CanadaPostPrice(APIView):
                 xml_content += f"""
                                 <destination>
                                     <united-states>
-                                        <zip-code>{zip_code.replace(" ","")}</zip-code>
+                                        <zip-code>{postal_code.replace(" ","")}</zip-code>
                                     </united-states>
                                 </destination>
                                 """
