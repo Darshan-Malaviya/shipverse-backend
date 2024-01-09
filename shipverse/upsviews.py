@@ -230,12 +230,10 @@ def removeUser(request):
     user = Users.objects.get(id=user_id)
     if not user : 
         return JsonResponse({"message": "User not found or Unauthorized !"},status=status.HTTP_200_OK)
-    shipperno = user_data['shipperno']
-    carrier = user_data['carrier']
+    id = user_data['shipperno'].get("id")
 
     try:
-        shipperLocation = UserCarrier.objects.filter(
-            user=user, account_number=shipperno, carrier = carrier).first() 
+        shipperLocation = UserCarrier.objects.get(id = id) 
         if not shipperLocation:
             return JsonResponse({'success': False}, status=status.HTTP_404_NOT_FOUND)
         shipperLocation.delete()
