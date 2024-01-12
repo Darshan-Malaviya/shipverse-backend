@@ -27,7 +27,7 @@ class CanadaUsersAccountDetails(APIView):
             serializer = UserCarrierSerializer(data=request.data)
 
             if not serializer.is_valid():
-                return func_response("failed",serializer.errors)
+                return func_response("failed",serializer.errors, status.HTTP_400_BAD_REQUEST)
 
             if request.data["carrier"]:
                 url = f"https://{const.canadaPost}/ot/token"
@@ -57,9 +57,14 @@ class CanadaUsersAccountDetails(APIView):
                             + str(const.customerNo)
                             + f"&return-url={const.cpVerify_link}"
                         }
-                    return func_response("success",data)
+                    return func_response("success",data, status.HTTP_200_OK)
                 else:
-                    return func_response("failed",json_decoded.get("messages", {}).get("message"))
+                    error = json_decoded.get("messages", {}).get("message")
+                    list_of_dicts = []
+                    if error:
+                        error_list = [error] if error and type(error) != list  else error
+                        list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+                    return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)
             else:
                 add_carrier_user(user, request.data)
             return Response({}, status=status.HTTP_200_OK)
@@ -89,6 +94,7 @@ class VerifyCanadaPost(APIView):
             headers=headers,
         )
         json_decoded = xmltodict.parse(result.content)
+        print("json decoded", json_decoded)
         user_carrier = UserCarrier.objects.filter(token_id = token_id)[0]
 
         if result.status_code == 200:
@@ -114,9 +120,14 @@ class VerifyCanadaPost(APIView):
                 usercarrier_id = user_carrier.id
             )
             candapost_obj.save()
-            return func_response("success",json_decoded["merchant-info"])
+            return func_response("success",json_decoded.get("merchant-info"), status.HTTP_200_OK)
         else:
-            return func_response("failed",json_decoded["messages"]["message"])
+            error = json_decoded.get("messages", {}).get("message")
+            list_of_dicts = []
+            if error:
+                error_list = [error] if error and type(error) != list  else error
+                list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+            return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)
 
 
 class ShipmentCreateAPI(APIView):
@@ -175,7 +186,7 @@ class ShipmentCreateAPI(APIView):
 
             result = requests.post(url, headers=headers, data=payload)
             json_decoded = xmltodict.parse(result.content)
-
+            # print("json_decoded ::", json_decoded)
             if result.status_code == 200:
                 response = {
                     "shipment-id": json_decoded.get("shipment-info", {}).get("shipment-id"),
@@ -183,9 +194,14 @@ class ShipmentCreateAPI(APIView):
                     "tracking-pin": json_decoded.get("shipment-info", {}).get("tracking-pin"),
                     "artifact_url": json_decoded.get("shipment-info", {}).get("links", {}).get("link", {})[-1].get("@href")
                 }
-                return func_response("success",response)
+                return func_response("success",response, status.HTTP_200_OK)
             else:
-                return func_response("failed",json_decoded)
+                error = json_decoded.get("messages", {}).get("message")
+                list_of_dicts = []
+                if error:
+                    error_list = [error] if error and type(error) != list  else error
+                    list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+                return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)   
 
 
 class CanadaPostPrice(APIView):
@@ -266,26 +282,32 @@ class CanadaPostPrice(APIView):
 
         response = requests.post(url=url, data=xml_content, headers=headers)
         json_decoded = xmltodict.parse(response.content)
-        if response.status_code != 200:
-            return func_response("failed",json_decoded)
-        output_data = []
-        data_list = json_decoded["price-quotes"]["price-quote"]
-        if type(json_decoded["price-quotes"]["price-quote"]) == dict:
-            data_list = [json_decoded["price-quotes"]["price-quote"]]
-        
-        for data in data_list:
-            output_data.append(
-                {
-                    "price": data.get("price-details", {}).get("base"),
-                    "taxes": "1.3",
-                    "service_name": data.get("service-name"),
-                    "service_code": data.get("service-code"),
-                }
-            )
-        if output_data:
-            return func_response("success",output_data)
+        if response.status_code == 200:
+            output_data = []
+            data_list = json_decoded["price-quotes"]["price-quote"]
+            if type(json_decoded["price-quotes"]["price-quote"]) == dict:
+                data_list = [json_decoded["price-quotes"]["price-quote"]]
+            
+            for data in data_list:
+                output_data.append(
+                    {
+                        "price": data.get("price-details", {}).get("base"),
+                        "taxes": "1.3",
+                        "service_name": data.get("service-name"),
+                        "service_code": data.get("service-code"),
+                    }
+                )
+            if output_data:
+                return func_response("success",output_data, status.HTTP_200_OK)
+            else:
+                return func_response("failed",output_data, status.HTTP_400_BAD_REQUEST)
         else:
-            return func_response("failed",response)
+            error = json_decoded.get("messages", {}).get("message")
+            list_of_dicts = []
+            if error:
+                error_list = [error] if error and type(error) != list  else error
+                list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+            return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST) 
 
         
 class GetArtifactAPI(APIView):
@@ -298,7 +320,7 @@ class GetArtifactAPI(APIView):
         
         get_link = request.data.get("artifact_link")
         if not get_link:
-            return func_response("failed","artifact link not found!")
+            return func_response("failed","artifact link not found!", status.HTTP_400_BAD_REQUEST)
         
         
         headers = {

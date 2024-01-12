@@ -3,6 +3,7 @@ import logging
 from .models import *
 from .auth import *
 from .response import func_response
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,10 @@ def authenticate_user(func):
                 user = Users.objects.get(id=user_id, isEmailVerified=True)
                 request.user = user
             except:
-                return func_response("failed", "User not found.")
+                return func_response("failed", "User not found.", status.HTTP_400_BAD_REQUEST)
             return func(self, request, *args, **kwargs)
         else:
-            return func_response("failed", "Unauthorized token.")
+            return func_response("failed", "Unauthorized token.", status.HTTP_400_BAD_REQUEST)
     return wrapper
 
 def validate_token(func):
@@ -36,6 +37,6 @@ def validate_token(func):
     def wrapper(self, request, *args, **kwargs):
         token_id = request.data.get("tokenId")
         if not token_id:
-            return func_response("failed", "Token id not found!")
+            return func_response("failed", "Token id not found!", status.HTTP_400_BAD_REQUEST)
         return func(self, request, *args, **kwargs)
     return wrapper
