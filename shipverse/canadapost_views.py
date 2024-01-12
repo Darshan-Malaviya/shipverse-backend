@@ -5,42 +5,29 @@ import base64
 import fitz  # PyMuPDF
 from rest_framework import status
 from django.http import HttpResponse
-from .auth import getUserIdByToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Users, CandapostUserDetails, UserCarrier
+from .models import CandapostUserDetails, UserCarrier
 from .common import add_carrier_user
-from .serializers import UserCarrierSerializer, CanadaPostPriceSerializer
+from .serializers import UserCarrierSerializer
 import shipverse.constant as const
 from shipverse.models import *
-from rest_framework.parsers import JSONParser
-from django.http.response import JsonResponse
-
 from .utils import *
-
+from .response import func_response
+from .decorators import *
 
 class CanadaUsersAccountDetails(APIView):
     """
     Step1 -  Create canada post account.
 
     """
-
+    @authenticate_user
     def post(self, request):
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
-        if auth_header:
-            try:
-                user_id = getUserIdByToken(auth_header)
-                user = Users.objects.get(id=user_id, isEmailVerified = True)
-            except:
-                return Response(
-                    {"message": "User not found or Unauthorized or Invalid Token!"},
-                    status=status.HTTP_200_OK,
-                )
-            
+            user = request.user
             serializer = UserCarrierSerializer(data=request.data)
 
             if not serializer.is_valid():
-                return Response(serializer.errors)
+                return func_response("failed",serializer.errors, status.HTTP_400_BAD_REQUEST)
 
             if request.data["carrier"]:
                 url = f"https://{const.canadaPost}/ot/token"
@@ -55,37 +42,32 @@ class CanadaUsersAccountDetails(APIView):
                     },
                 )
                 json_decoded = xmltodict.parse(result.content)
-                token_id = json_decoded["token"]["token-id"]
+                token_id = json_decoded.get("token",{}).get("token-id")
+
 
                 if result.status_code == 200:
                     redirect_url = "https://www.canadapost-postescanada.ca/information/app/drc/testMerchant"
-                    user_carrier = add_carrier_user(user, request.data, token_id=token_id)
-                    response = {
-                        "isSuccess": True,
-                        "message": None,
-                        "data": {
+                    _ = add_carrier_user(user, request.data, token_id=token_id)
+
+                    data = {
                             "redirectUrl": redirect_url
                             + "?token-id="
                             + json_decoded.get("token", {}).get("token-id")
                             + "&platform-id="
                             + str(const.customerNo)
                             + f"&return-url={const.cpVerify_link}"
-                        },
-                    }
+                        }
+                    return func_response("success",data, status.HTTP_200_OK)
                 else:
-                    response = {
-                        "isSuccess": False,
-                        "message": json_decoded.get("messages", {}).get("message"),
-                        "data": None,
-                    }
-                return Response(response, status=status.HTTP_200_OK)
+                    error = json_decoded.get("messages", {}).get("message")
+                    list_of_dicts = []
+                    if error:
+                        error_list = [error] if error and type(error) != list  else error
+                        list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+                    return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)
             else:
                 add_carrier_user(user, request.data)
             return Response({}, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"message": "Unauthorized token"}, status=status.HTTP_401_UNAUTHORIZED
-            )
 
 
 class VerifyCanadaPost(APIView):
@@ -93,81 +75,59 @@ class VerifyCanadaPost(APIView):
     Step2 - Verify the carrier account
 
     """
-
+    @authenticate_user
+    @validate_token
     def post(self, request):
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
-        if auth_header:
-            token_id = request.data["tokenId"]
-            if not token_id:
-                return Response(
-                    {"message": "Token id not found!"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            try:
-                user_id = getUserIdByToken(auth_header)
-                user = Users.objects.get(id=user_id, isEmailVerified = True)
-            except:
-                return Response(
-                    {"message": "User not found or Unauthorized or Invalid Token!"},
-                    status=status.HTTP_200_OK,
-                )
+        token_id = request.data.get("tokenId")
+        user = request.user
 
-            url = f"https://{const.canadaPost}/ot/token/" + token_id
-            headers = {
-                "Accept": const.contentTypeRegistrationXml,
-                "Content-Type": const.contentTypeRegistrationXml,
-                "Authorization": "Basic " + const.encoded_cred,
-                "Accept-language": const.acceptLanguage,
-            }
+        url = f"https://{const.canadaPost}/ot/token/" + token_id
+        headers = {
+            "Accept": const.contentTypeRegistrationXml,
+            "Content-Type": const.contentTypeRegistrationXml,
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
+        }
 
-            result = requests.get(
-                url=url,
-                headers=headers,
+        result = requests.get(
+            url=url,
+            headers=headers,
+        )
+        json_decoded = xmltodict.parse(result.content)
+        print("json decoded", json_decoded)
+        user_carrier = UserCarrier.objects.filter(token_id = token_id)[0]
+
+        if result.status_code == 200:
+            customer_number = json_decoded.get("merchant-info").get("customer-number")
+            contract_number = json_decoded.get("merchant-info").get("contract-number")
+            merchant_username = json_decoded.get("merchant-info").get(
+                "merchant-username"
             )
-            json_decoded = xmltodict.parse(result.content)
-            user_carrier = UserCarrier.objects.filter(token_id = token_id)[0]
+            merchant_password = json_decoded.get("merchant-info").get(
+                "merchant-password"
+            )
+            is_credit_card = json_decoded.get("merchant-info").get(
+                "has-default-credit-card"
+            )
 
-            if result.status_code == 200:
-                customer_number = json_decoded.get("merchant-info").get("customer-number")
-                contract_number = json_decoded.get("merchant-info").get("contract-number")
-                merchant_username = json_decoded.get("merchant-info").get(
-                    "merchant-username"
-                )
-                merchant_password = json_decoded.get("merchant-info").get(
-                    "merchant-password"
-                )
-                is_credit_card = json_decoded.get("merchant-info").get(
-                    "has-default-credit-card"
-                )
-
-                candapost_obj = CandapostUserDetails(
-                    user=user,
-                    customer_number=customer_number,
-                    contract_number=contract_number,
-                    merchant_username=merchant_username,
-                    merchant_password=merchant_password,
-                    has_credit_card=is_credit_card,
-                    usercarrier_id = user_carrier.id
-                )
-                candapost_obj.save()
-
-                response = {
-                    "isSuccess": True,
-                    "message": "",
-                    "data": json_decoded["merchant-info"],
-                }
-
-            else:
-                response = {
-                    "isSuccess": False,
-                    "message": json_decoded["messages"]["message"],
-                    "data": None,
-                }
-            return Response(response, status=status.HTTP_200_OK)
+            candapost_obj = CandapostUserDetails(
+                user=user,
+                customer_number=customer_number,
+                contract_number=contract_number,
+                merchant_username=merchant_username,
+                merchant_password=merchant_password,
+                has_credit_card=is_credit_card,
+                usercarrier_id = user_carrier.id
+            )
+            candapost_obj.save()
+            return func_response("success",json_decoded.get("merchant-info"), status.HTTP_200_OK)
         else:
-            return Response(
-                {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
-            )
+            error = json_decoded.get("messages", {}).get("message")
+            list_of_dicts = []
+            if error:
+                error_list = [error] if error and type(error) != list  else error
+                list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+            return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)
 
 
 class ShipmentCreateAPI(APIView):
@@ -175,9 +135,9 @@ class ShipmentCreateAPI(APIView):
     Create shipment in Canada Post
     """
 
+    @authenticate_user
     def post(self, request):
-        try:
-            user = get_authenticated_user(request)
+            user = request.user
             user_carrier = UserCarrier.objects.filter(user=user).first()
             from_location = FromLocation.objects.filter(userId = user.id).first()
             data = request.data
@@ -226,7 +186,7 @@ class ShipmentCreateAPI(APIView):
 
             result = requests.post(url, headers=headers, data=payload)
             json_decoded = xmltodict.parse(result.content)
-
+            # print("json_decoded ::", json_decoded)
             if result.status_code == 200:
                 response = {
                     "shipment-id": json_decoded.get("shipment-info", {}).get("shipment-id"),
@@ -234,16 +194,14 @@ class ShipmentCreateAPI(APIView):
                     "tracking-pin": json_decoded.get("shipment-info", {}).get("tracking-pin"),
                     "artifact_url": json_decoded.get("shipment-info", {}).get("links", {}).get("link", {})[-1].get("@href")
                 }
+                return func_response("success",response, status.HTTP_200_OK)
             else:
-                response = {
-                    "message": json_decoded
-                }
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response(response, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                error = json_decoded.get("messages", {}).get("message")
+                list_of_dicts = []
+                if error:
+                    error_list = [error] if error and type(error) != list  else error
+                    list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+                return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST)   
 
 
 class CanadaPostPrice(APIView):
@@ -251,97 +209,80 @@ class CanadaPostPrice(APIView):
     Get price form the canada post
 
     """
-
+    @authenticate_user
     def post(self, request):
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
-        if auth_header:
-            try:
-                user_id = getUserIdByToken(auth_header)
-                user = Users.objects.get(id=user_id, isEmailVerified = True)
-            except:
-                return Response(
-                    {"message": "User not found or Unauthorized or Invalid Token!"},
-                    status=status.HTTP_200_OK,
-                )
 
-            origin_postal_code = request.data.get("origin_postal_code")
-            postal_code = request.data.get("postal_code")
-            # zip_code = request.data.get("zip_code")
-            country_code = request.data.get("country_code")
+        origin_postal_code = request.data.get("origin_postal_code")
+        postal_code = request.data.get("postal_code")
+        country_code = request.data.get("country_code")
 
-            weight = request.data.get("weight") if request.data.get("weight") else "1"
-            length = request.data.get("length")
-            width = request.data.get("width") 
-            height = request.data.get("height") 
-            insurance_value = request.data.get("insurance_value")
+        weight = request.data.get("weight") if request.data.get("weight") else "1"
+        length = request.data.get("length")
+        width = request.data.get("width") 
+        height = request.data.get("height") 
+        insurance_value = request.data.get("insurance_value")
 
-            url = f"https://{const.canadaPost}/rs/ship/price"
-            headers = {
-                "Accept": const.contentTypeShipRateXml,
-                "Content-Type": const.contentTypeShipRateXml,
-                "Authorization": "Basic " + const.encoded_cred,
-                "Accept-language": const.acceptLanguage,
-            }
+        url = f"https://{const.canadaPost}/rs/ship/price"
+        headers = {
+            "Accept": const.contentTypeShipRateXml,
+            "Content-Type": const.contentTypeShipRateXml,
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
+        }
 
-            xml_content = f"""
+        xml_content = f"""
                             <mailing-scenario xmlns="http://www.canadapost.ca/ws/ship/rate-v4">
                                 <customer-number>{const.customerNo}</customer-number>"""
-            if insurance_value:
-                xml_content+=f"""<options>
-                                    <option>
-                                        <option-code>COV</option-code>
-                                        <option-amount>{insurance_value}</option-amount>
-                                    </option>
-                                <options>"""
-                                
-            xml_content += f""" <parcel-characteristics>
-                                    <weight>{weight}</weight>"""
-            if length or width or height:
-                    xml_content+=f"""           
-                                    <dimensions>
-                                        <length>{length}</length>
-                                        <width>{width}</width>
-                                        <height>{height}</height>
-                                    </dimensions>"""
+        if insurance_value:
+            xml_content+=f"""<options>
+                                <option>
+                                    <option-code>COV</option-code>
+                                    <option-amount>{insurance_value}</option-amount>
+                                </option>
+                            <options>"""
+                            
+        xml_content += f""" <parcel-characteristics>
+                                <weight>{weight}</weight>"""
+        if length or width or height:
+                xml_content+=f"""           
+                                <dimensions>
+                                    <length>{length}</length>
+                                    <width>{width}</width>
+                                    <height>{height}</height>
+                                </dimensions>"""
+        xml_content += f"""
+                            </parcel-characteristics>
+                            <origin-postal-code>{origin_postal_code.replace(" ","")}</origin-postal-code>
+                            """
+        if country_code == "CA":
+            xml_content += f""" 
+                            <destination>
+                                <domestic>                      
+                                    <postal-code>{postal_code.replace(" ","")}</postal-code>
+                                </domestic>
+                            </destination>
+                            """
+            
+        elif country_code == "US":
             xml_content += f"""
-                                </parcel-characteristics>
-                                <origin-postal-code>{origin_postal_code.replace(" ","")}</origin-postal-code>
-                                """
-            if country_code == "CA":
-                xml_content += f""" 
-                                <destination>
-                                    <domestic>                      
-                                        <postal-code>{postal_code.replace(" ","")}</postal-code>
-                                    </domestic>
-                                </destination>
-                                """
-                
-            elif country_code == "US":
-                xml_content += f"""
-                                <destination>
-                                    <united-states>
-                                        <zip-code>{postal_code.replace(" ","")}</zip-code>
-                                    </united-states>
-                                </destination>
-                                """
-            else:         
-                xml_content += f""" 
-                                <destination>
-                                    <international>                      
-                                        <country-code>{country_code.replace(" ","")}</country-code>
-                                    </international>
-                                </destination>"""
-            xml_content +=f"""</mailing-scenario>"""
+                            <destination>
+                                <united-states>
+                                    <zip-code>{postal_code.replace(" ","")}</zip-code>
+                                </united-states>
+                            </destination>
+                            """
+        else:         
+            xml_content += f""" 
+                            <destination>
+                                <international>                      
+                                    <country-code>{country_code.replace(" ","")}</country-code>
+                                </international>
+                            </destination>"""
+        xml_content +=f"""</mailing-scenario>"""
 
-
-            response = requests.post(url=url, data=xml_content, headers=headers)
-            json_decoded = xmltodict.parse(response.content)
-            if response.status_code != 200:
-                return Response({
-                        "message": json_decoded,
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            json_decoded = xmltodict.parse(response.content)
-            print("json decoded", json_decoded)
+        response = requests.post(url=url, data=xml_content, headers=headers)
+        json_decoded = xmltodict.parse(response.content)
+        if response.status_code == 200:
             output_data = []
             data_list = json_decoded["price-quotes"]["price-quote"]
             if type(json_decoded["price-quotes"]["price-quote"]) == dict:
@@ -357,13 +298,16 @@ class CanadaPostPrice(APIView):
                     }
                 )
             if output_data:
-                return Response(output_data, status=status.HTTP_200_OK)
+                return func_response("success",output_data, status.HTTP_200_OK)
             else:
-                return Response(response, status=status.HTTP_200_OK)
+                return func_response("failed",output_data, status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(
-                {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
-            )
+            error = json_decoded.get("messages", {}).get("message")
+            list_of_dicts = []
+            if error:
+                error_list = [error] if error and type(error) != list  else error
+                list_of_dicts = [{"error_message": sublist.get("description")} for sublist in error_list]
+            return func_response("failed",list_of_dicts, status.HTTP_400_BAD_REQUEST) 
 
         
 class GetArtifactAPI(APIView):
@@ -371,46 +315,31 @@ class GetArtifactAPI(APIView):
     Get lable for the shipment
 
     """
-
+    @authenticate_user
     def post(self, request):
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
-        if auth_header:
-            try:
-                user_id = getUserIdByToken(auth_header)
-                user = Users.objects.get(id=user_id, isEmailVerified = True)
-            except:
-                return Response(
-                    {"message": "User not found or Unauthorized or Invalid Token!"},
-                    status=status.HTTP_200_OK,
-                )
-            get_link = request.data.get("artifact_link")
-            if not get_link:
-                return Response(
-                    {"message": "artifact link not found!"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            headers = {
-                "Accept": "application/pdf",
-                # "Content-Type": "application/vnd.cpc.shipment-v8+xml",
-                "Authorization": "Basic " + const.encoded_cred,
-                "Accept-language": const.acceptLanguage,
-            }
+        
+        get_link = request.data.get("artifact_link")
+        if not get_link:
+            return func_response("failed","artifact link not found!", status.HTTP_400_BAD_REQUEST)
+        
+        
+        headers = {
+            "Accept": "application/pdf",
+            "Authorization": "Basic " + const.encoded_cred,
+            "Accept-language": const.acceptLanguage,
+        }
 
-            response = requests.get(url=get_link, headers=headers)
-            with io.BytesIO(response.content) as pdf_stream:
-                pdf_document = fitz.open(stream=pdf_stream)
-                page = pdf_document[0]
-                page_img = page.get_pixmap()
-                base64_encoded = base64.b64encode(page_img.tobytes()).decode("utf-8")
+        response = requests.get(url=get_link, headers=headers)
+        with io.BytesIO(response.content) as pdf_stream:
+            pdf_document = fitz.open(stream=pdf_stream)
+            page = pdf_document[0]
+            page_img = page.get_pixmap()
+            base64_encoded = base64.b64encode(page_img.tobytes()).decode("utf-8")
 
-            if response.status_code == 200:
-                return HttpResponse(
-                    base64_encoded,
-                    status=status.HTTP_200_OK,
-                    content_type="application/pdf",
-                )
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(
-                {"message": "Authorization token not found!"}, status=status.HTTP_200_OK
+        if response.status_code == 200:
+            return HttpResponse(
+                base64_encoded,
+                status=status.HTTP_200_OK,
+                content_type="application/pdf",
             )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
