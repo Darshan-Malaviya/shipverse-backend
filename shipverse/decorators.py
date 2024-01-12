@@ -1,6 +1,8 @@
 from functools import wraps
-from django.http import HttpRequest
 import logging
+from .models import *
+from .auth import *
+from .response import func_response
 
 logger = logging.getLogger(__name__)
 
@@ -11,3 +13,29 @@ logger = logging.getLogger(__name__)
 #     #         # logger.info(f"API Request, Path: {request.path}, Body: {request.body}")
 #         return func(request, *args, **kwargs)
 #     return wrapper
+
+
+def authenticate_user(func):
+    @wraps(func)    
+    def wrapper(self, request, *args, **kwargs):
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        if auth_header:
+            try:
+                user_id = getUserIdByToken(auth_header)
+                user = Users.objects.get(id=user_id, isEmailVerified=True)
+                request.user = user
+            except:
+                return func_response("failed", "User not found.")
+            return func(self, request, *args, **kwargs)
+        else:
+            return func_response("failed", "Unauthorized token.")
+    return wrapper
+
+def validate_token(func):
+    @wraps(func)
+    def wrapper(self, request, *args, **kwargs):
+        token_id = request.data.get("tokenId")
+        if not token_id:
+            return func_response("failed", "Token id not found!")
+        return func(self, request, *args, **kwargs)
+    return wrapper
