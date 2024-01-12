@@ -1,5 +1,6 @@
 from .auth import getUserIdByToken
 from .models import *
+from .response import func_response
 
 def CheckReturnOnBoard(user_id : str):
 
@@ -62,18 +63,22 @@ def get_parcel_info(data):
 
 
 def get_options(data):
+        service_code = data.get("shipmentData", {}).get("service_code")
         insurance_value = data.get("shipmentData", {}).get("declared_value")
+        non_delivery_handling = data.get("shipmentData", {}).get("internationalForm", {}).get("nonDelivery")
+        delivery_codes = ["RASE", "RTS", "ABAN"]
         options = []
         if insurance_value:
             options.append({
                 "option-code": "COV",
                 "option-amount": insurance_value
             })
-        options.append({
-            "option-code": "RASE"
-        })
+        if not service_code.startswith("DOM") or (non_delivery_handling in delivery_codes):
+            options.append({
+                "option-code": non_delivery_handling
+            })    
         return options
-
+        
 
 def get_customs_info(data):
     products = data.get("shipmentData", {}).get("products")
@@ -102,17 +107,24 @@ def get_customs_info(data):
     exchange_rates = {
         "CAD": 1.0,  # Canadian Dollar
         "USD": 0.75,  # Example: Exchange rate for USD
-        "INR": 62.23 
+        "INR": 62.23,
+        # "AFN": ,
+        # "ALL": ,
+        # "EUR": ,
+        # "ARS": ,
+        # "AUD": ,
+        # "BHD": ,
+        # "BDT": ,
+        # "CNY": ,
+        # "COP": ,
+        # "CZK": ,
         # Add more currencies and their exchange rates as needed
     }
     conversion_rate = exchange_rates.get(currency_code, None)
-    print(conversion_rate)
     if conversion_rate is not None:
         value_in_foreign_currency = value * conversion_rate
     else:
         value_in_foreign_currency = None
-
-    print("value_in_foreign_currency", value_in_foreign_currency)
 
     return {
         "currency": currency_code,
